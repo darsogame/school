@@ -1,0 +1,4264 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>آزمایشگاه فیزیک</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  .game-wrapper {
+    width: 100%;
+    max-width: 1050px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 25px;
+    padding: 25px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  /* ===== هدر کلی ===== */
+  .global-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .global-title {
+    font-size: 22px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .global-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat.gold {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #1e293b;
+    border-color: #fbbf24;
+  }
+
+  /* ===== صفحه انتخاب مرحله ===== */
+  .levels-screen {
+    display: block;
+  }
+
+  .levels-screen.hidden {
+    display: none;
+  }
+
+  .levels-screen h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+
+  .levels-screen p.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
+    padding: 15px 0;
+  }
+
+  .level-card {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-radius: 20px;
+    padding: 22px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    position: relative;
+  }
+
+  .level-card:hover:not(.locked) {
+    transform: translateY(-6px);
+    border-color: #38bdf8;
+    box-shadow: 0 15px 40px rgba(56, 189, 248, 0.3);
+  }
+
+  .level-card.locked {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+  }
+
+  .level-card.completed {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #064e3b, #065f46);
+  }
+
+  .level-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .level-name {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+
+  .level-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    min-height: 36px;
+  }
+
+  .level-status {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+  }
+
+  .level-card.completed .level-status {
+    background: rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+  }
+
+  .level-card.locked .level-status {
+    background: rgba(120, 120, 120, 0.2);
+    color: #94a3b8;
+  }
+
+  /* ===== صفحه بازی ===== */
+  .game-screen {
+    display: none;
+  }
+
+  .game-screen.active {
+    display: block;
+  }
+
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .back-btn {
+    background: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover {
+    background: rgba(148, 163, 184, 0.25);
+  }
+
+  .game-header h2 {
+    font-size: 18px;
+    color: #f1f5f9;
+    margin: 0;
+  }
+
+  .level-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+
+  /* ===== محفظه کنواس ===== */
+  .canvas-wrapper {
+    position: relative;
+    background: #0a0f1e;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+  }
+
+  .canvas-wrapper canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ===== دکمه‌های خاص هر مرحله ===== */
+  .game-specific-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+    min-height: 70px;
+  }
+
+  .ctrl-arrow {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    color: #fff;
+    border: none;
+    font-size: 26px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ctrl-arrow:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 28px rgba(56, 189, 248, 0.6);
+  }
+
+  .ctrl-arrow:active {
+    transform: scale(0.92);
+  }
+
+  .ctrl-arrow.up {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+  }
+
+  .ctrl-arrow.down {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  /* دکمه ترمز (خاص مرحله ۱) */
+  .ctrl-btn.brake {
+    padding: 16px 50px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: inherit;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.5);
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .ctrl-btn.brake:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(220, 38, 38, 0.7);
+  }
+
+  .ctrl-btn.brake:active {
+    transform: translateY(0);
+  }
+
+  /* ===== دکمه‌های عمومی ===== */
+  .game-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    padding: 12px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    border: 2px solid rgba(148, 163, 184, 0.25);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .action-btn:hover {
+    background: rgba(148, 163, 184, 0.3);
+    transform: translateY(-3px);
+  }
+
+  /* ===== مودال ===== */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .modal.active { display: flex; }
+
+  .modal-box {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border-radius: 24px;
+    max-width: 560px;
+    width: 100%;
+    max-height: calc(100vh - 30px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    animation: popIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-content {
+    padding: 30px 28px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    text-align: center;
+    scrollbar-width: thin;
+    scrollbar-color: #475569 #1e293b;
+  }
+
+  .modal-content::-webkit-scrollbar { width: 8px; }
+  .modal-content::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+  .modal-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+  .modal-emoji {
+    font-size: 70px;
+    margin-bottom: 12px;
+    animation: bounce 1s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .modal-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .modal-actions {
+    padding: 18px 28px 22px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    background: rgba(15, 23, 42, 0.5);
+    flex-shrink: 0;
+  }
+
+  .modal-btn {
+    padding: 12px 26px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .modal-btn.primary {
+    background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    color: #fff;
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+  }
+
+  .modal-btn.primary:hover { transform: translateY(-3px); }
+
+  .modal-btn.secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #e2e8f0;
+  }
+
+  .modal-btn.secondary:hover { background: rgba(148, 163, 184, 0.35); }
+
+  /* ===== ریسپانسیو ===== */
+  @media (max-width: 640px) {
+    .game-wrapper { padding: 15px; border-radius: 18px; }
+    .levels-grid { grid-template-columns: 1fr; }
+    .modal-box { border-radius: 18px; }
+    .modal-content { padding: 22px 18px 15px; }
+    .modal-actions { padding: 15px 18px; }
+    .modal-btn { padding: 10px 18px; font-size: 14px; flex: 1; }
+    .modal-emoji { font-size: 55px; }
+    .modal-title { font-size: 20px; }
+    .ctrl-arrow { width: 55px; height: 55px; font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game-wrapper">
+
+  <!-- ===== هدر کلی ===== -->
+  <div class="global-header">
+    <div class="global-title">⚡ آزمایشگاه فیزیک</div>
+    <div class="global-stats">
+      <div class="stat gold">🏆 امتیاز کل: <span id="totalScore">0</span></div>
+      <div class="stat">🎯 مرحله: <span id="currentLevelNum">1</span>/<span id="totalLevels">4</span></div>
+    </div>
+  </div>
+
+  <!-- ===== صفحه انتخاب مرحله ===== -->
+  <div class="levels-screen" id="levelsScreen">
+    <h2>🗺️ انتخاب مرحله</h2>
+    <p class="subtitle">هر مرحله یک مفهوم فیزیک را آموزش می‌دهد</p>
+    <div class="levels-grid" id="levelsGrid"></div>
+  </div>
+
+  <!-- ===== صفحه بازی ===== -->
+  <div class="game-screen" id="gameScreen">
+    <div class="game-header">
+      <button class="back-btn" id="backBtn">↩ بازگشت</button>
+      <h2 id="gameTitle">مرحله ۱</h2>
+      <div style="width: 120px;"></div>
+    </div>
+
+    <div class="level-info">
+      <span id="levelName">مرحله ۱</span>
+      <span id="levelHint">برای ترمز دکمه را نگه دارید</span>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas" width="1000" height="520"></canvas>
+      <canvas id="gameCanvas3D" width="1000" height="520" style="display:none; position:absolute; top:0; left:0;"></canvas>
+    </div>
+
+    <!-- دکمه‌های خاص هر مرحله (داینامیک) -->
+    <div class="game-specific-controls" id="gameControls"></div>
+
+    <!-- دکمه‌های عمومی -->
+    <div class="game-actions">
+      <button class="action-btn" id="resetBtn">🔄 شروع مجدد</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== مودال ===== -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-content">
+      <div class="modal-emoji" id="modalEmoji">🎉</div>
+      <div class="modal-title" id="modalTitle">آفرین!</div>
+      <div class="modal-msg" id="modalMsg"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="modalBackBtn">🗺️ مراحل</button>
+      <button class="modal-btn primary" id="modalNextBtn">▶ ادامه</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  /* ══════════════════════════════════════════════════════════════
+     📦 کلاس پایه مرحله
+     ══════════════════════════════════════════════════════════════ */
+     class BaseLevel {
+  constructor(game) {
+    this.game = game;
+    this.ctx = game.ctx;
+    this.canvas = game.canvas;
+  }
+  init() {}
+  update(dt) {}
+  render() {}
+  handleInput(action, pressed) {}
+  handleClick(x, y) {}
+  checkResult() { return null; }
+  is3D() { return false; }   // ⭐ اضافه شد
+}
+  
+  /* ══════════════════════════════════════════════════════════════
+     🚗 مرحله ۱: ترمز ماشین
+     ══════════════════════════════════════════════════════════════ */
+  class Level1_Brake extends BaseLevel {
+    init() {
+      this.roadLengthMeters = 100;
+      this.roadStartMeters = 10;
+      
+      this.carPositionM = this.roadStartMeters;
+      this.carSpeedMs = 30;
+      this.initialSpeedMs = 30;
+      
+      this.brakeForceMs2 = 8;
+      this.braking = false;
+      
+      this.targetZoneStartM = 65;
+      this.targetZoneEndM = 85;
+      this.targetZoneWidthM = this.targetZoneEndM - this.targetZoneStartM;
+      
+      this.wallPositionM = this.roadLengthMeters;
+      
+      this.pixelsPerMeter = 10;
+      this.roadStartX = 30;
+      this.roadY = 380;
+      this.roadHeight = 80;
+      
+      this.elapsed = 0;
+      this.crashed = false;
+      this.stopped = false;
+      this.finished = false;
+      
+      this.arrowOffset = 0;
+      this.stopArrowOffset = 0;
+    }
+  
+    update(dt) {
+      if (this.finished) return;
+      this.elapsed += dt;
+      this.arrowOffset = (this.arrowOffset + dt * 20) % 20;
+      this.stopArrowOffset = (this.stopArrowOffset + dt * 25) % 15;
+      
+      if (this.braking && this.carSpeedMs > 0) {
+        this.carSpeedMs -= this.brakeForceMs2 * dt;
+        if (this.carSpeedMs < 0) this.carSpeedMs = 0;
+      }
+      
+      this.carPositionM += this.carSpeedMs * dt;
+      
+      if (this.carSpeedMs === 0 && !this.stopped) {
+        this.stopped = true;
+        this.finished = true;
+      }
+      
+      if (this.carPositionM >= this.wallPositionM - 2) {
+        this.crashed = true;
+        this.finished = true;
+      }
+    }
+  
+    handleInput(action, pressed) {
+      if (action === 'brake') this.braking = pressed;
+    }
+  
+    checkResult() {
+      if (!this.finished) return null;
+      
+      if (this.crashed) {
+        return {
+          status: 'lose',
+          reason: `💥 بیش از حد دیر ترمز کردی! ماشین به دیوار خورد.`,
+          formula: {
+            title: 'فاصله توقف واقعی',
+            calc: `d = v² / (2a) = ${this.initialSpeedMs}² / (2 × ${this.brakeForceMs2}) = ${(this.initialSpeedMs ** 2 / (2 * this.brakeForceMs2)).toFixed(1)} m`,
+            note: `ماشین به ${(this.initialSpeedMs ** 2 / (2 * this.brakeForceMs2)).toFixed(1)} متر نیاز داشت، ولی دیرتر ترمز زدی.`
+          }
+        };
+      }
+      
+      if (this.carPositionM >= this.targetZoneStartM && this.carPositionM <= this.targetZoneEndM) {
+        const timeBonus = Math.max(0, 20 - Math.floor(this.elapsed));
+        const stopDist = this.initialSpeedMs ** 2 / (2 * this.brakeForceMs2);
+        return {
+          status: 'win',
+          reason: `🎯 ماشین در متر ${this.carPositionM.toFixed(1)} متوقف شد — دقیقاً در ناحیه پارک!`,
+          score: 100 + timeBonus,
+          formula: {
+            title: 'محاسبه فاصله توقف',
+            calc: `d = v² / (2a) = ${this.initialSpeedMs}² / (2 × ${this.brakeForceMs2}) = ${stopDist.toFixed(1)} m`,
+            note: `از لحظه ترمز تا توقف، ماشین به ${stopDist.toFixed(1)} متر نیاز داشت.`
+          }
+        };
+      }
+      
+      if (this.carPositionM < this.targetZoneStartM) {
+        const distance = (this.targetZoneStartM - this.carPositionM).toFixed(1);
+        return {
+          status: 'lose',
+          reason: `🛑 خیلی زود ترمز کردی! ${distance} متر عقب‌تر از ناحیه پارک ایستادی.`,
+          formula: {
+            title: 'محاسبه فاصله توقف',
+            calc: `d = v² / (2a) = ${this.initialSpeedMs}² / (2 × ${this.brakeForceMs2}) = ${(this.initialSpeedMs ** 2 / (2 * this.brakeForceMs2)).toFixed(1)} m`,
+            note: 'کمی دیرتر ترمز بزن.'
+          }
+        };
+      }
+      
+      return {
+        status: 'lose',
+        reason: `⚠️ از ناحیه پارک عبور کردی!`,
+        formula: {
+          title: 'محاسبه فاصله توقف',
+          calc: `d = v² / (2a) = ${(this.initialSpeedMs ** 2 / (2 * this.brakeForceMs2)).toFixed(1)} m`,
+          note: 'کمی زودتر ترمز بزن.'
+        }
+      };
+    }
+  
+    mToPx(meters) {
+      return this.roadStartX + meters * this.pixelsPerMeter;
+    }
+    
+    getStoppingDistance() {
+      return (this.carSpeedMs * this.carSpeedMs) / (2 * this.brakeForceMs2);
+    }
+    
+    getDistanceToTarget() {
+      return Math.max(0, this.targetZoneStartM - this.carPositionM);
+    }
+  
+    render() {
+      const ctx = this.ctx;
+      const W = this.canvas.width;
+      const H = this.canvas.height;
+      
+      // آسمان
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, this.roadY);
+      skyGrad.addColorStop(0, '#0c4a6e');
+      skyGrad.addColorStop(1, '#38bdf8');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, this.roadY);
+      
+      // خورشید
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 30;
+      ctx.beginPath();
+      ctx.arc(850, 80, 40, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      // زمین
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, this.roadY, W, H - this.roadY);
+      
+      // جاده
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(this.mToPx(0), this.roadY, this.roadLengthMeters * this.pixelsPerMeter, this.roadHeight);
+      
+      // خط‌چین مرکزی
+      for (let m = 0; m < this.roadLengthMeters; m += 5) {
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(this.mToPx(m), this.roadY + this.roadHeight / 2 - 2, 30, 4);
+      }
+      
+      // ناحیه پارک
+      const inTarget = this.carSpeedMs === 0 && this.carPositionM >= this.targetZoneStartM && this.carPositionM <= this.targetZoneEndM;
+      ctx.fillStyle = inTarget ? 'rgba(34, 197, 94, 0.4)' : 'rgba(34, 197, 94, 0.2)';
+      ctx.fillRect(this.mToPx(this.targetZoneStartM), this.roadY, this.targetZoneWidthM * this.pixelsPerMeter, this.roadHeight);
+      
+      // حاشیه
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 5]);
+      ctx.strokeRect(this.mToPx(this.targetZoneStartM), this.roadY, this.targetZoneWidthM * this.pixelsPerMeter, this.roadHeight);
+      ctx.setLineDash([]);
+      
+      // P
+      ctx.fillStyle = '#22c55e';
+      ctx.font = 'bold 28px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText('P', this.mToPx((this.targetZoneStartM + this.targetZoneEndM) / 2), this.roadY + 50);
+      
+      // دیوار
+      const wallX = this.mToPx(this.wallPositionM);
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(wallX, this.roadY - 60, 20, this.roadHeight + 60);
+      for (let y = this.roadY - 60; y < this.roadY + this.roadHeight; y += 20) {
+        ctx.fillStyle = (Math.floor(y / 20) % 2 === 0) ? '#dc2626' : '#fff';
+        ctx.fillRect(wallX, y, 20, 20);
+      }
+      
+      this.renderRuler(ctx);
+      this.renderDistanceArrows(ctx);
+      this.renderCar(ctx);
+      this.renderHUD(ctx);
+      
+      if (this.crashed) this.renderExplosion(ctx);
+    }
+  
+    renderRuler(ctx) {
+      const y = this.roadY + this.roadHeight + 15;
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.textAlign = 'center';
+      
+      for (let m = 0; m <= this.roadLengthMeters; m += 10) {
+        const x = this.mToPx(m);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, this.roadY + this.roadHeight);
+        ctx.lineTo(x, this.roadY + this.roadHeight + 8);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`${m}m`, x, y + 12);
+      }
+    }
+  
+    renderDistanceArrows(ctx) {
+      const carX = this.mToPx(this.carPositionM) + 40;
+      const targetX = this.mToPx(this.targetZoneStartM);
+      const arrowY = this.roadY - 100;
+      const distToTarget = this.getDistanceToTarget();
+      
+      if (distToTarget > 0.5) {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(carX, arrowY);
+        ctx.lineTo(targetX, arrowY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(carX, arrowY - 10);
+        ctx.lineTo(carX, arrowY + 10);
+        ctx.moveTo(targetX, arrowY - 10);
+        ctx.lineTo(targetX, arrowY + 10);
+        ctx.stroke();
+        
+        this.drawMovingArrows(ctx, carX, targetX, arrowY, '#38bdf8', this.arrowOffset);
+        
+        const midX = (carX + targetX) / 2;
+        const label = `${distToTarget.toFixed(1)} m`;
+        ctx.font = 'bold 16px Vazirmatn';
+        const tw = ctx.measureText(label).width;
+        
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.95)';
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.roundRect(midX - (tw + 30) / 2, arrowY - 16, tw + 30, 32, 10);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, midX, arrowY);
+        ctx.textBaseline = 'alphabetic';
+        
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 12px Vazirmatn';
+        ctx.fillText('📏 فاصله تا پارک', midX, arrowY - 25);
+      }
+      
+      // پیکان محل توقف
+      if (this.braking && !this.stopped && !this.crashed) {
+        const stopDist = this.getStoppingDistance();
+        const stopPosM = this.carPositionM + stopDist;
+        const stopX = this.mToPx(stopPosM);
+        const arrowY2 = this.roadY - 170;
+        
+        const inside = stopPosM >= this.targetZoneStartM && stopPosM <= this.targetZoneEndM;
+        const boxColor = inside ? 'rgba(34, 197, 94, 0.95)' : 'rgba(245, 158, 11, 0.95)';
+        
+        ctx.strokeStyle = '#a78bfa';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(carX, arrowY2);
+        ctx.lineTo(stopX, arrowY2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(carX, arrowY2 - 10);
+        ctx.lineTo(carX, arrowY2 + 10);
+        ctx.moveTo(stopX, arrowY2 - 10);
+        ctx.lineTo(stopX, arrowY2 + 10);
+        ctx.stroke();
+        
+        this.drawMovingArrows(ctx, carX, stopX, arrowY2, '#a78bfa', this.stopArrowOffset);
+        
+        const midX = (carX + stopX) / 2;
+        const label = `${stopDist.toFixed(1)} m`;
+        ctx.font = 'bold 16px Vazirmatn';
+        const tw = ctx.measureText(label).width;
+        
+        ctx.fillStyle = boxColor;
+        ctx.shadowColor = inside ? 'rgba(34, 197, 94, 0.6)' : 'rgba(245, 158, 11, 0.6)';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.roundRect(midX - (tw + 30) / 2, arrowY2 - 16, tw + 30, 32, 10);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, midX, arrowY2);
+        ctx.textBaseline = 'alphabetic';
+        
+        ctx.fillStyle = inside ? '#22c55e' : '#f59e0b';
+        ctx.font = 'bold 12px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText(inside ? '🛑 توقف مناسب' : '⚠️ خارج از پارک', midX, arrowY2 - 25);
+      }
+    }
+  
+    drawMovingArrows(ctx, x1, x2, y, color, offset) {
+      const start = Math.min(x1, x2);
+      const end = Math.max(x1, x2);
+      const gap = 20;
+      const arrowSize = 7;
+      ctx.fillStyle = color;
+      
+      for (let x = start + offset; x < end - arrowSize * 2; x += gap) {
+        ctx.beginPath();
+        ctx.moveTo(x, y - arrowSize);
+        ctx.lineTo(x + arrowSize, y);
+        ctx.lineTo(x, y + arrowSize);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  
+    renderCar(ctx) {
+      const x = this.mToPx(this.carPositionM);
+      const y = this.roadY + this.roadHeight - 55;
+      
+      ctx.fillStyle = this.braking ? '#dc2626' : '#3b82f6';
+      ctx.beginPath();
+      ctx.roundRect(x, y, 80, 45, 10);
+      ctx.fill();
+      
+      ctx.fillStyle = this.braking ? '#991b1b' : '#1d4ed8';
+      ctx.beginPath();
+      ctx.roundRect(x + 20, y - 20, 45, 25, 8);
+      ctx.fill();
+      
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(x + 24, y - 15, 16, 18, 4);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(x + 44, y - 15, 16, 18, 4);
+      ctx.fill();
+      
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(x + 18, y + 50, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 62, y + 50, 14, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x + 18, y + 50, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x + 62, y + 50, 8, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      if (this.braking) {
+        ctx.fillStyle = '#ef4444';
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(x + 5, y + 20, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+  
+    renderHUD(ctx) {
+      // سرعت
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(20, 20, 200, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('🚗 سرعت', 210, 42);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${this.carSpeedMs.toFixed(1)} m/s`, 210, 72);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 12px Vazirmatn';
+      ctx.fillText(`≈ ${(this.carSpeedMs * 3.6).toFixed(0)} km/h`, 210, 95);
+      
+      // فاصله
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(230, 20, 200, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('📏 فاصله تا پارک', 420, 42);
+      
+      const distToTarget = this.getDistanceToTarget();
+      ctx.fillStyle = distToTarget > 20 ? '#fff' : '#22c55e';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${distToTarget.toFixed(1)} m`, 420, 72);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 12px Vazirmatn';
+      ctx.fillText(`ناحیه: ${this.targetZoneStartM}-${this.targetZoneEndM}m`, 420, 95);
+      
+      // زمان
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(440, 20, 160, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('⏱️ زمان', 590, 42);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${this.elapsed.toFixed(2)} s`, 590, 72);
+      
+      // فاصله توقف
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(610, 20, 240, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('🛑 فاصله توقف لازم', 840, 42);
+      
+      const stopDist = this.getStoppingDistance();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${stopDist.toFixed(1)} m`, 840, 72);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText('d = v² / 2a', 840, 95);
+    }
+  
+    renderExplosion(ctx) {
+      const x = this.mToPx(this.carPositionM) + 40;
+      const y = this.roadY + this.roadHeight - 30;
+      
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.8)';
+      ctx.beginPath();
+      ctx.arc(x, y, 60, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
+      ctx.beginPath();
+      ctx.arc(x, y, 40, 0, Math.PI * 2);
+      ctx.fill();
+      
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist = 70 + Math.random() * 30;
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 48px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText('💥', x, y - 80);
+    }
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     🏹 مرحله ۲: پرتابه (حرکت پرتابی)
+     ══════════════════════════════════════════════════════════════ */
+  class Level2_Projectile extends BaseLevel {
+    init() {
+      this.g = 9.8;
+      this.source = { x: 100, y: 440 };
+      this.target = { x: 820, y: 380, radius: 35 };
+      
+      this.pixelsPerMeter = 8;
+      this.groundY = 470;
+      
+      this.angle = 45;
+      this.speed = 25;
+      
+      this.minAngle = 10;
+      this.maxAngle = 80;
+      this.minSpeed = 10;
+      this.maxSpeed = 40;
+      
+      this.launched = false;
+      this.finished = false;
+      this.hitTarget = false;
+      
+      this.t = 0;
+      this.ballX = 0;
+      this.ballY = 0;
+      this.trajectory = [];
+      this.finalPosition = null;
+      this.lastError = null;
+    }
+  
+    handleInput(action, pressed) {
+      if (this.launched) return;
+      
+      if (action === 'angleUp') this.angle = Math.min(this.maxAngle, this.angle + 1);
+      if (action === 'angleDown') this.angle = Math.max(this.minAngle, this.angle - 1);
+      
+      if (action === 'speedUp') this.speed = Math.min(this.maxSpeed, this.speed + 0.5);
+      if (action === 'speedDown') this.speed = Math.max(this.minSpeed, this.speed - 0.5);
+      
+      if (action === 'launch' && !this.launched) {
+        this.launch();
+      }
+    }
+  
+    launch() {
+      this.launched = true;
+      this.t = 0;
+      this.trajectory = [];
+    }
+  
+    update(dt) {
+      if (this.finished) return;
+      
+      if (this.launched) {
+        this.t += dt;
+        
+        const theta = (this.angle * Math.PI) / 180;
+        const vx = this.speed * Math.cos(theta);
+        const vy = this.speed * Math.sin(theta);
+        
+        const xm = vx * this.t;
+        const ym = vy * this.t - 0.5 * this.g * this.t * this.t;
+        
+        this.ballX = 60 + xm * this.pixelsPerMeter;
+        this.ballY = this.groundY - ym * this.pixelsPerMeter;
+        
+        if (this.trajectory.length === 0 || 
+            this.t - this.trajectory[this.trajectory.length - 1].t > 0.02) {
+          this.trajectory.push({ x: this.ballX, y: this.ballY, t: this.t });
+        }
+        
+        const distToTarget = Math.hypot(
+          this.ballX - this.target.x,
+          this.ballY - this.target.y
+        );
+        
+        if (distToTarget < this.target.radius + 15) {
+          this.hitTarget = true;
+          this.finalPosition = { x: this.ballX, y: this.ballY };
+          this.finished = true;
+          return;
+        }
+        
+        if (this.ballY >= this.groundY) {
+          this.ballY = this.groundY;
+          this.finalPosition = { x: this.ballX, y: this.ballY };
+          
+          this.lastError = {
+            horizontal: (this.ballX - this.target.x) / this.pixelsPerMeter,
+            vertical: (this.groundY - this.target.y) / this.pixelsPerMeter,
+            total: Math.hypot(this.ballX - this.target.x, this.groundY - this.target.y) / this.pixelsPerMeter
+          };
+          
+          this.finished = true;
+          return;
+        }
+        
+        if (this.ballX > this.canvas.width + 50 || this.t > 20) {
+          this.finalPosition = { x: this.ballX, y: this.ballY };
+          this.finished = true;
+        }
+      }
+    }
+  
+    checkResult() {
+      if (!this.finished) return null;
+      
+      const theta = (this.angle * Math.PI) / 180;
+      const range = (this.speed ** 2 * Math.sin(2 * theta)) / this.g;
+      const maxHeight = (this.speed ** 2 * Math.sin(theta) ** 2) / (2 * this.g);
+      const flightTime = (2 * this.speed * Math.sin(theta)) / this.g;
+      
+      const distanceToTarget = (this.target.x - this.source.x) / this.pixelsPerMeter;
+      
+      if (this.hitTarget) {
+        return {
+          status: 'win',
+          reason: `🎯 توپ دقیقاً به هدف برخورد کرد!`,
+          score: 150,
+          formula: {
+            title: 'حرکت پرتابی',
+            calc: `R = v²·sin(2θ)/g = ${this.speed}²·sin(${(2 * this.angle).toFixed(0)}°)/9.8 = ${range.toFixed(1)} m`,
+            note: `زاویه ${this.angle}°، سرعت ${this.speed} m/s. ارتفاع اوج: ${maxHeight.toFixed(1)} متر، زمان پرواز: ${flightTime.toFixed(2)} ثانیه.`
+          }
+        };
+      }
+      
+      const errorMeters = this.lastError ? this.lastError.total.toFixed(1) : '?';
+      
+      let hint = '';
+      if (this.lastError) {
+        if (this.lastError.horizontal < 0) {
+          hint = `توپ ${Math.abs(this.lastError.horizontal).toFixed(1)} متر قبل از هدف افتاد. زاویه یا سرعت را بیشتر کن.`;
+        } else {
+          hint = `توپ ${this.lastError.horizontal.toFixed(1)} متر بعد از هدف افتاد. زاویه یا سرعت را کمتر کن.`;
+        }
+      }
+      
+      return {
+        status: 'lose',
+        reason: `😢 توپ به هدف نخورد. فاصله تا هدف: ${errorMeters} متر`,
+        formula: {
+          title: 'حرکت پرتابی',
+          calc: `R = v²·sin(2θ)/g = ${range.toFixed(1)} m`,
+          note: `برد فعلی توپ ${range.toFixed(1)} متر بود، ولی هدف در فاصله ${distanceToTarget.toFixed(1)} متر قرار دارد. ${hint}`
+        }
+      };
+    }
+  
+    render() {
+      const ctx = this.ctx;
+      const W = this.canvas.width;
+      const H = this.canvas.height;
+      
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, this.groundY);
+      skyGrad.addColorStop(0, '#1e3a8a');
+      skyGrad.addColorStop(0.5, '#3b82f6');
+      skyGrad.addColorStop(1, '#93c5fd');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, this.groundY);
+      
+      this.renderClouds(ctx);
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 40;
+      ctx.beginPath();
+      ctx.arc(150, 80, 45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      const groundGrad = ctx.createLinearGradient(0, this.groundY, 0, H);
+      groundGrad.addColorStop(0, '#166534');
+      groundGrad.addColorStop(1, '#14532d');
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, this.groundY, W, H - this.groundY);
+      
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, this.groundY);
+      ctx.lineTo(W, this.groundY);
+      ctx.stroke();
+      
+      this.renderRuler(ctx);
+      
+      if (!this.launched) {
+        this.renderPredictedPath(ctx);
+      }
+      
+      if (this.launched && this.trajectory.length > 1) {
+        this.renderTrajectory(ctx);
+      }
+      
+      this.renderTarget(ctx);
+      this.renderBall(ctx);
+      this.renderLauncher(ctx);
+      this.renderHUD(ctx);
+    }
+  
+    renderClouds(ctx) {
+      const t = Date.now() / 10000;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      
+      const clouds = [
+        { x: (200 + t * 5) % 1200 - 100, y: 100, s: 1 },
+        { x: (500 + t * 3) % 1200 - 100, y: 60, s: 0.8 },
+        { x: (800 + t * 4) % 1200 - 100, y: 130, s: 1.1 },
+      ];
+      
+      clouds.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 25 * c.s, 0, Math.PI * 2);
+        ctx.arc(c.x + 30 * c.s, c.y, 30 * c.s, 0, Math.PI * 2);
+        ctx.arc(c.x + 60 * c.s, c.y, 25 * c.s, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+  
+    renderRuler(ctx) {
+      const y = this.groundY + 20;
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.textAlign = 'center';
+      
+      for (let m = 0; m <= 100; m += 10) {
+        const x = 60 + m * this.pixelsPerMeter;
+        if (x > this.canvas.width) break;
+        
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, this.groundY);
+        ctx.lineTo(x, this.groundY + 8);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`${m}m`, x, y + 12);
+      }
+    }
+  
+    renderPredictedPath(ctx) {
+      const theta = (this.angle * Math.PI) / 180;
+      const vx = this.speed * Math.cos(theta);
+      const vy = this.speed * Math.sin(theta);
+      
+      const flightTime = (2 * vy) / this.g;
+      
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      
+      const steps = 60;
+      let firstPoint = true;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * flightTime;
+        const xm = vx * t;
+        const ym = vy * t - 0.5 * this.g * t * t;
+        
+        const px = 60 + xm * this.pixelsPerMeter;
+        const py = this.groundY - ym * this.pixelsPerMeter;
+        
+        if (firstPoint) {
+          ctx.moveTo(px, py);
+          firstPoint = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+        
+        if (py >= this.groundY) break;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      const range = (this.speed ** 2 * Math.sin(2 * theta)) / this.g;
+      const landingX = 60 + range * this.pixelsPerMeter;
+      
+      if (landingX < this.canvas.width + 50) {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(landingX, this.groundY - 30);
+        ctx.lineTo(landingX, this.groundY + 5);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 12px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText(`فرود در ${range.toFixed(1)}m`, landingX, this.groundY - 40);
+      }
+    }
+  
+    renderTrajectory(ctx) {
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(this.trajectory[0].x, this.trajectory[0].y);
+      for (let i = 1; i < this.trajectory.length; i++) {
+        ctx.lineTo(this.trajectory[i].x, this.trajectory[i].y);
+      }
+      ctx.stroke();
+    }
+  
+    renderTarget(ctx) {
+      const t = this.target;
+      
+      ctx.fillStyle = '#8b5cf6';
+      ctx.fillRect(t.x - 5, t.y + t.radius, 10, this.groundY - t.y - t.radius);
+      
+      ctx.shadowColor = this.hitTarget ? '#22c55e' : 'transparent';
+      ctx.shadowBlur = this.hitTarget ? 30 : 0;
+      
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.radius * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.fillStyle = this.hitTarget ? '#22c55e' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, t.radius * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.shadowBlur = 0;
+    }
+  
+    renderBall(ctx) {
+      if (!this.launched) return;
+      
+      const x = this.ballX;
+      const y = this.ballY;
+      
+      ctx.shadowColor = this.hitTarget ? '#22c55e' : '#fbbf24';
+      ctx.shadowBlur = 20;
+      
+      ctx.fillStyle = this.hitTarget ? '#22c55e' : '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.beginPath();
+      ctx.arc(x - 4, y - 4, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  
+    renderLauncher(ctx) {
+      const x = this.source.x;
+      const y = this.source.y;
+      
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.roundRect(x - 30, y + 10, 60, 25, 8);
+      ctx.fill();
+      
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(x - 20, y + 45, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 20, y + 45, 10, 0, Math.PI * 2);
+      ctx.fill();
+      
+      const rad = -(this.angle * Math.PI) / 180;
+      const len = 55;
+      const endX = x + Math.cos(rad) * len;
+      const endY = y + Math.sin(rad) * len;
+      
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#0ea5e9';
+      ctx.beginPath();
+      ctx.arc(endX, endY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      
+      if (!this.launched) {
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 14px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${this.angle}°`, x + 40, y - 40);
+      }
+    }
+  
+    renderHUD(ctx) {
+      const W = this.canvas.width;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(20, 20, 200, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('📐 زاویه پرتاب', 210, 42);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 26px Vazirmatn';
+      ctx.fillText(`${this.angle}°`, 210, 75);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText('◀ ▶ یا Arrow keys', 210, 98);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(230, 20, 200, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('🚀 سرعت اولیه', 420, 42);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 26px Vazirmatn';
+      ctx.fillText(`${this.speed.toFixed(1)} m/s`, 420, 75);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText('▲ ▼ یا Arrow Up/Down', 420, 98);
+      
+      if (!this.launched) {
+        const theta = (this.angle * Math.PI) / 180;
+        const range = (this.speed ** 2 * Math.sin(2 * theta)) / this.g;
+        const maxH = (this.speed ** 2 * Math.sin(theta) ** 2) / (2 * this.g);
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.beginPath();
+        ctx.roundRect(W - 280, 20, 260, 130, 15);
+        ctx.fill();
+        
+        ctx.fillStyle = '#a78bfa';
+        ctx.font = 'bold 13px Vazirmatn';
+        ctx.textAlign = 'right';
+        ctx.fillText('📊 پیش‌بینی فیزیکی', W - 55, 45);
+        
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 15px Vazirmatn';
+        ctx.textAlign = 'right';
+        ctx.fillText(`برد: ${range.toFixed(1)} m`, W - 55, 75);
+        ctx.fillText(`ارتفاع اوج: ${maxH.toFixed(1)} m`, W - 55, 100);
+        ctx.fillText(`زمان پرواز: ${(2 * this.speed * Math.sin(theta) / this.g).toFixed(2)} s`, W - 55, 125);
+      }
+      
+      if (!this.launched) {
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+        ctx.font = 'bold 14px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎯 زاویه و سرعت را تنظیم کن، بعد Space بزن!', W / 2, 40);
+      }
+    }
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     ⚖️ مرحله ۳: تعادل اهرم (گشتاور)
+     ══════════════════════════════════════════════════════════════ */
+  class Level3_Balance extends BaseLevel {
+    init() {
+      this.pivotX = 500;
+      this.pivotY = 280;
+      this.barLength = 700;
+      this.barThickness = 18;
+      
+      this.pixelsPerMeter = 20;
+      
+      this.minDistance = 1.0;
+      this.maxDistance = 5.0;
+      
+      this.leftWeights = [
+        { mass: 10, distance: 3.0, color: '#ef4444', selected: false },
+        { mass: 5,  distance: 1.5, color: '#f59e0b', selected: false }
+      ];
+      
+      this.rightWeights = [
+        { mass: 8,  distance: 2.5, color: '#3b82f6', selected: false },
+        { mass: 12, distance: 4.0, color: '#8b5cf6', selected: false }
+      ];
+      
+      this.selectedWeight = null;
+      
+      this.elapsed = 0;
+      this.finished = false;
+      this.solved = false;
+      this.holdTime = 0;
+      this.requiredHold = 1.5;
+      this.tolerance = 0.3;
+      
+      this.currentAngle = 0;
+      this.targetAngle = 0;
+    }
+  
+    calculateTorque(weights) {
+      return weights.reduce((sum, w) => sum + w.mass * w.distance, 0);
+    }
+  
+    getLeftTorque() {
+      return this.calculateTorque(this.leftWeights);
+    }
+  
+    getRightTorque() {
+      return this.calculateTorque(this.rightWeights);
+    }
+  
+    handleInput(action, pressed) {
+      if (this.finished) return;
+      if (!pressed) return;
+      
+      if (action === 'selectNext') this.selectNextWeight();
+      if (action === 'selectPrev') this.selectPrevWeight();
+      
+      if (action === 'moveLeft' && this.selectedWeight) {
+        this.moveWeight(-0.2);
+      }
+      if (action === 'moveRight' && this.selectedWeight) {
+        this.moveWeight(0.2);
+      }
+    }
+  
+    selectNextWeight() {
+      const allWeights = [
+        ...this.leftWeights.map((w, i) => ({ side: 'left', index: i })),
+        ...this.rightWeights.map((w, i) => ({ side: 'right', index: i }))
+      ];
+      
+      if (this.selectedWeight) {
+        const prev = this.selectedWeight;
+        const arr = prev.side === 'left' ? this.leftWeights : this.rightWeights;
+        arr[prev.index].selected = false;
+      }
+      
+      let currentIdx = -1;
+      if (this.selectedWeight) {
+        currentIdx = allWeights.findIndex(w => 
+          w.side === this.selectedWeight.side && 
+          w.index === this.selectedWeight.index
+        );
+      }
+      
+      const nextIdx = (currentIdx + 1) % allWeights.length;
+      this.selectedWeight = allWeights[nextIdx];
+      
+      const arr = this.selectedWeight.side === 'left' ? this.leftWeights : this.rightWeights;
+      arr[this.selectedWeight.index].selected = true;
+    }
+  
+    selectPrevWeight() {
+      const allWeights = [
+        ...this.leftWeights.map((w, i) => ({ side: 'left', index: i })),
+        ...this.rightWeights.map((w, i) => ({ side: 'right', index: i }))
+      ];
+      
+      if (this.selectedWeight) {
+        const prev = this.selectedWeight;
+        const arr = prev.side === 'left' ? this.leftWeights : this.rightWeights;
+        arr[prev.index].selected = false;
+      }
+      
+      let currentIdx = 0;
+      if (this.selectedWeight) {
+        currentIdx = allWeights.findIndex(w => 
+          w.side === this.selectedWeight.side && 
+          w.index === this.selectedWeight.index
+        );
+      }
+      
+      const prevIdx = (currentIdx - 1 + allWeights.length) % allWeights.length;
+      this.selectedWeight = allWeights[prevIdx];
+      
+      const arr = this.selectedWeight.side === 'left' ? this.leftWeights : this.rightWeights;
+      arr[this.selectedWeight.index].selected = true;
+    }
+  
+    moveWeight(delta) {
+      if (!this.selectedWeight) return;
+      
+      const arr = this.selectedWeight.side === 'left' ? this.leftWeights : this.rightWeights;
+      const w = arr[this.selectedWeight.index];
+      
+      w.distance += delta;
+      w.distance = Math.max(this.minDistance, Math.min(this.maxDistance, w.distance));
+    }
+  
+    update(dt) {
+      if (this.finished) return;
+      this.elapsed += dt;
+      
+      const leftT = this.getLeftTorque();
+      const rightT = this.getRightTorque();
+      const diff = leftT - rightT;
+      
+      const maxAngle = 0.35;
+      const maxDiff = 40;
+      this.targetAngle = Math.max(-maxAngle, Math.min(maxAngle, -diff / maxDiff * maxAngle));
+      
+      this.currentAngle += (this.targetAngle - this.currentAngle) * dt * 5;
+      
+      if (Math.abs(diff) < this.tolerance) {
+        this.holdTime += dt;
+        if (this.holdTime >= this.requiredHold) {
+          this.solved = true;
+          this.finished = true;
+        }
+      } else {
+        this.holdTime = Math.max(0, this.holdTime - dt * 2);
+      }
+    }
+  
+    checkResult() {
+      if (!this.finished) return null;
+      
+      const leftT = this.getLeftTorque();
+      const rightT = this.getRightTorque();
+      
+      return {
+        status: 'win',
+        reason: `⚖️ الاکلنگ به تعادل رسید!`,
+        score: 130,
+        formula: {
+          title: 'قانون گشتاور',
+          calc: `F₁·d₁ = F₂·d₂ → ${leftT.toFixed(1)} = ${rightT.toFixed(1)}`,
+          note: `گشتاور سمت چپ (${leftT.toFixed(1)} kg·m) با گشتاور سمت راست (${rightT.toFixed(1)} kg·m) برابر شد. مجموع جرم چپ: ${this.leftWeights.reduce((s,w)=>s+w.mass,0)} kg، راست: ${this.rightWeights.reduce((s,w)=>s+w.mass,0)} kg.`
+        }
+      };
+    }
+  
+    render() {
+      const ctx = this.ctx;
+      const W = this.canvas.width;
+      const H = this.canvas.height;
+      
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+      skyGrad.addColorStop(0, '#0a0f1e');
+      skyGrad.addColorStop(0.6, '#1e293b');
+      skyGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, W, H);
+      
+      this.renderStars(ctx);
+      this.renderPivot(ctx);
+      this.renderBar(ctx);
+      this.renderWeights(ctx);
+      this.renderRuler(ctx);
+      this.renderHUD(ctx);
+    }
+  
+    renderStars(ctx) {
+      const W = this.canvas.width;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      
+      for (let i = 0; i < 50; i++) {
+        const x = (i * 137) % W;
+        const y = (i * 79) % 200;
+        const size = (i % 3) + 1;
+        const twinkle = Math.sin(Date.now() / 500 + i) * 0.3 + 0.7;
+        ctx.globalAlpha = twinkle;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  
+    renderPivot(ctx) {
+      const x = this.pivotX;
+      const y = this.pivotY;
+      
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 60, y + 200);
+      ctx.lineTo(x + 60, y + 200);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.moveTo(x, y + 10);
+      ctx.lineTo(x + 60, y + 200);
+      ctx.lineTo(x + 70, y + 200);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  
+    renderBar(ctx) {
+      const angle = this.currentAngle;
+      const halfLen = this.barLength / 2;
+      
+      ctx.save();
+      ctx.translate(this.pivotX, this.pivotY);
+      ctx.rotate(angle);
+      
+      ctx.fillStyle = '#a78bfa';
+      ctx.shadowColor = '#a78bfa';
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.roundRect(-halfLen, -this.barThickness / 2, this.barLength, this.barThickness, this.barThickness / 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-halfLen, 0);
+      ctx.lineTo(halfLen, 0);
+      ctx.stroke();
+      
+      for (let d = 1; d <= 5; d++) {
+        const px = d * this.pixelsPerMeter;
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-px, -this.barThickness / 2);
+        ctx.lineTo(-px, -this.barThickness / 2 - 8);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(px, -this.barThickness / 2);
+        ctx.lineTo(px, -this.barThickness / 2 - 8);
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+    }
+  
+    renderWeights(ctx) {
+      const angle = this.currentAngle;
+      
+      this.leftWeights.forEach((w) => {
+        const xBefore = -w.distance * this.pixelsPerMeter;
+        const yBefore = -30;
+        
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const x = this.pivotX + xBefore * cos - yBefore * sin;
+        const y = this.pivotY + xBefore * sin + yBefore * cos;
+        
+        this.drawWeight(ctx, x, y, w);
+      });
+      
+      this.rightWeights.forEach((w) => {
+        const xBefore = w.distance * this.pixelsPerMeter;
+        const yBefore = -30;
+        
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const x = this.pivotX + xBefore * cos - yBefore * sin;
+        const y = this.pivotY + xBefore * sin + yBefore * cos;
+        
+        this.drawWeight(ctx, x, y, w);
+      });
+    }
+  
+    drawWeight(ctx, x, y, weight) {
+      const size = 30 + weight.mass * 1.5;
+      const halfSize = size / 2;
+      
+      if (weight.selected) {
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([8, 6]);
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 25;
+        ctx.beginPath();
+        ctx.arc(x, y, halfSize + 15, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.shadowBlur = 0;
+      }
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(x + 5, y + halfSize + 5, halfSize, halfSize * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = weight.color;
+      ctx.shadowColor = weight.color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.roundRect(x - halfSize, y - halfSize, size, size, 8);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      const gradient = ctx.createLinearGradient(x - halfSize, y - halfSize, x + halfSize, y + halfSize);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.roundRect(x - halfSize, y - halfSize, size, size, 8);
+      ctx.fill();
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${weight.mass}kg`, x, y);
+      ctx.textBaseline = 'alphabetic';
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${weight.distance.toFixed(1)}m`, x, y + halfSize + 18);
+    }
+  
+    renderRuler(ctx) {
+      const y = 480;
+      
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(this.pivotX - 200, y);
+      ctx.lineTo(this.pivotX + 200, y);
+      ctx.stroke();
+      
+      ctx.font = 'bold 10px Vazirmatn';
+      ctx.textAlign = 'center';
+      for (let d = -5; d <= 5; d++) {
+        if (d === 0) continue;
+        const x = this.pivotX + d * this.pixelsPerMeter * 2;
+        
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.beginPath();
+        ctx.moveTo(x, y - 5);
+        ctx.lineTo(x, y + 5);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`${Math.abs(d)}m`, x, y + 18);
+      }
+    }
+  
+    renderHUD(ctx) {
+      const W = this.canvas.width;
+      const leftT = this.getLeftTorque();
+      const rightT = this.getRightTorque();
+      const diff = Math.abs(leftT - rightT);
+      const balanced = diff < this.tolerance;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(20, 20, 220, 100, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#ef4444';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('⚖️ گشتاور چپ', 225, 45);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${leftT.toFixed(1)} kg·m`, 225, 75);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText(`مجموع جرم: ${this.leftWeights.reduce((s,w)=>s+w.mass,0)} kg`, 225, 98);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(250, 20, 220, 100, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#3b82f6';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('⚖️ گشتاور راست', 455, 45);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${rightT.toFixed(1)} kg·m`, 455, 75);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText(`مجموع جرم: ${this.rightWeights.reduce((s,w)=>s+w.mass,0)} kg`, 455, 98);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(W - 260, 20, 240, 100, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = balanced ? '#22c55e' : '#f59e0b';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText(balanced ? '✅ متعادل!' : '⚠️ اختلاف', W - 45, 45);
+      
+      ctx.fillStyle = balanced ? '#22c55e' : '#f59e0b';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText(`${diff.toFixed(1)}`, W - 45, 75);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText(`آستانه: ${this.tolerance} kg·m`, W - 45, 98);
+      
+      if (balanced && !this.finished) {
+        const progress = this.holdTime / this.requiredHold;
+        const barY = 135;
+        const barW = 240;
+        const barX = W - 260;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, 40, 12);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+        ctx.beginPath();
+        ctx.roundRect(barX + 15, barY + 14, barW - 30, 12, 6);
+        ctx.fill();
+        
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.roundRect(barX + 15, barY + 14, (barW - 30) * progress, 12, 6);
+        ctx.fill();
+        
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 11px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏳ نگه دار...', barX + barW / 2, barY + 38);
+      }
+      
+      ctx.fillStyle = 'rgba(167, 139, 250, 0.9)';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎯 وزنه‌ها را جابه‌جا کن تا گشتاور دو طرف برابر شود', W / 2, 145);
+      
+      if (this.selectedWeight) {
+        const arr = this.selectedWeight.side === 'left' ? this.leftWeights : this.rightWeights;
+        const w = arr[this.selectedWeight.index];
+        const sideName = this.selectedWeight.side === 'left' ? 'چپ' : 'راست';
+        
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(W / 2 - 200, 160, 400, 45, 12);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 14px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText(`🎯 انتخاب شده: وزنه ${w.mass}kg سمت ${sideName}`, W / 2, 185);
+      } else {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.15)';
+        ctx.beginPath();
+        ctx.roundRect(W / 2 - 200, 160, 400, 45, 12);
+        ctx.fill();
+        
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 14px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText('👆 روی وزنه کلیک کن یا از دکمه‌ها استفاده کن', W / 2, 185);
+      }
+    }
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     ⚡ مرحله ۴: مدار الکتریکی
+     ══════════════════════════════════════════════════════════════ */
+  class Level4_Circuit extends BaseLevel {
+    init() {
+      this.voltage = 12;
+      this.resistance = 20;
+      this.minR = 1;
+      this.maxR = 100;
+      this.targetCurrent = 0.4;
+      this.tolerance = 0.05;
+      this.finished = false;
+      this.elapsed = 0;
+      this.successTime = 0;
+      this.requiredHoldTime = 1.0;
+      this.updateCurrent();
+    }
+  
+    updateCurrent() {
+      this.current = this.voltage / this.resistance;
+      this.power = this.voltage * this.current;
+      this.brightness = Math.min(1, this.power / 5);
+    }
+  
+    handleInput(action, pressed) {
+      if (action === 'rUp')   this.resistance = Math.min(this.maxR, this.resistance + 1);
+      if (action === 'rDown') this.resistance = Math.max(this.minR, this.resistance - 1);
+    }
+  
+    update(dt) {
+      if (this.finished) return;
+      this.elapsed += dt;
+      this.updateCurrent();
+      
+      const diff = Math.abs(this.current - this.targetCurrent);
+      if (diff < this.tolerance) {
+        this.successTime += dt;
+        if (this.successTime >= this.requiredHoldTime) this.finished = true;
+      } else {
+        this.successTime = Math.max(0, this.successTime - dt * 2);
+      }
+    }
+  
+    checkResult() {
+      if (!this.finished) return null;
+      return {
+        status: 'win',
+        reason: `⚡ لامپ با روشنایی مطلوب روشن شد!`,
+        score: 110,
+        formula: {
+          title: 'قانون اهم',
+          calc: `I = V / R = ${this.voltage} / ${this.resistance} = ${this.current.toFixed(2)} A`,
+          note: `توان مصرفی: ${this.power.toFixed(2)} وات.`
+        }
+      };
+    }
+  
+    render() {
+      const ctx = this.ctx;
+      const W = this.canvas.width;
+      const H = this.canvas.height;
+      
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#0a0f1e');
+      grad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+      
+      const circuitTop = 140;
+      const circuitBottom = 400;
+      const circuitLeft = 150;
+      const circuitRight = 850;
+      
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(circuitLeft, circuitTop);
+      ctx.lineTo(circuitRight, circuitTop);
+      ctx.lineTo(circuitRight, circuitBottom);
+      ctx.lineTo(circuitLeft, circuitBottom);
+      ctx.closePath();
+      ctx.stroke();
+      
+      this.renderBattery(ctx, circuitLeft, (circuitTop + circuitBottom) / 2);
+      this.renderResistor(ctx, (circuitLeft + circuitRight) / 2, circuitTop);
+      this.renderLamp(ctx, circuitRight, (circuitTop + circuitBottom) / 2);
+      this.renderElectrons(ctx, circuitLeft, circuitTop, circuitRight, circuitBottom);
+      this.renderHUD(ctx);
+    }
+  
+    renderBattery(ctx, x, y) {
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(x - 35, y - 40, 70, 80, 10);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(x - 15, y - 55, 30, 15);
+      
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(x - 15, y + 40, 30, 15);
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 18px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${this.voltage}V`, x, y + 6);
+    }
+  
+    renderResistor(ctx, x, y) {
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#a78bfa';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(x - 80, y - 30, 160, 60, 10);
+      ctx.fill();
+      ctx.stroke();
+      
+      const colors = ['#ef4444', '#fbbf24', '#22c55e', '#3b82f6'];
+      colors.forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.fillRect(x - 50 + i * 30, y - 30, 8, 60);
+      });
+      
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 16px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${this.resistance} Ω`, x, y + 6);
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 12px Vazirmatn';
+      ctx.fillText('⬆️ ⬇️ برای تنظیم', x, y - 45);
+    }
+  
+    renderLamp(ctx, x, y) {
+      if (this.brightness > 0.05) {
+        const glowRad = 40 + this.brightness * 80;
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, glowRad);
+        glow.addColorStop(0, `rgba(251, 191, 36, ${this.brightness * 0.7})`);
+        glow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(x, y, glowRad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      const bulbColor = `rgba(251, 191, 36, ${0.2 + this.brightness * 0.8})`;
+      ctx.fillStyle = bulbColor;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, 35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.strokeStyle = `rgba(251, 191, 36, ${0.5 + this.brightness * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - 12, y + 10);
+      ctx.lineTo(x - 6, y - 8);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x + 6, y - 8);
+      ctx.lineTo(x + 12, y + 10);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(x - 20, y + 30, 40, 15);
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 14px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText('لامپ', x, y + 70);
+      
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText(`${Math.round(this.brightness * 100)}%`, x, y + 88);
+    }
+  
+    renderElectrons(ctx, x1, y1, x2, y2) {
+      const speed = this.current * 300;
+      const t = (Date.now() / 1000) * speed;
+      const spacing = 80;
+      const offset = t % spacing;
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 10;
+      
+      const perimeter = 2 * ((x2 - x1) + (y2 - y1));
+      
+      for (let d = offset; d < perimeter; d += spacing) {
+        const pos = this.getPointOnPerimeter(d, x1, y1, x2, y2);
+        if (!pos) continue;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+    }
+  
+    getPointOnPerimeter(d, x1, y1, x2, y2) {
+      const w = x2 - x1;
+      const h = y2 - y1;
+      if (d < w) return { x: x1 + d, y: y1 };
+      d -= w;
+      if (d < h) return { x: x2, y: y1 + d };
+      d -= h;
+      if (d < w) return { x: x2 - d, y: y2 };
+      d -= w;
+      if (d < h) return { x: x1, y: y2 - d };
+      return null;
+    }
+  
+    renderHUD(ctx) {
+      const W = this.canvas.width;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(20, 20, 210, 100, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('⚡ جریان', 215, 45);
+      
+      const diff = Math.abs(this.current - this.targetCurrent);
+      const inRange = diff < this.tolerance;
+      
+      ctx.fillStyle = inRange ? '#22c55e' : '#fff';
+      ctx.font = 'bold 26px Vazirmatn';
+      ctx.fillText(`${this.current.toFixed(2)} A`, 215, 78);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText(`هدف: ${this.targetCurrent.toFixed(2)} A`, 215, 100);
+      
+      if (inRange) {
+        const progress = this.successTime / this.requiredHoldTime;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.beginPath();
+        ctx.roundRect(20, 130, 210, 40, 12);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+        ctx.beginPath();
+        ctx.roundRect(30, 145, 190, 12, 6);
+        ctx.fill();
+        
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.roundRect(30, 145, 190 * progress, 12, 6);
+        ctx.fill();
+        
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 11px Vazirmatn';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏳ نگه دار...', 125, 168);
+      }
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(W - 280, 20, 260, 90, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText('قانون اهم', W - 55, 45);
+      
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.fillText('V = I · R', W - 55, 78);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.fillText('مقاومت را تغییر بده تا I مطلوب شود', W - 55, 100);
+    }
+  }
+  /* ══════════════════════════════════════════════════════════════
+   🧪 مرحله ۵: زنگ‌زدگی آهن (اکسایش-کاهش)
+   ══════════════════════════════════════════════════════════════ */
+class Level5_Corrosion extends BaseLevel {
+  init() {
+    // ═══════ مراحل: metal → equation → spray → result ═══════
+    this.stage = 'metal';
+    
+    // ═══════ فلزات ═══════
+    this.metals = [
+      { id: 'copper', name: 'مس',  symbol: 'Cu', color: '#b87333', icon: '🔶', correct: false },
+      { id: 'iron',   name: 'آهن',  symbol: 'Fe', color: '#64748b', icon: '🔩', correct: true },
+      { id: 'gold',   name: 'طلا',  symbol: 'Au', color: '#fbbf24', icon: '🥇', correct: false },
+      { id: 'zinc',   name: 'روی',  symbol: 'Zn', color: '#a1a1aa', icon: '⚙️', correct: false }
+    ];
+    
+    this.selectedMetal = null;
+    
+    // ═══════ معادلات ═══════
+    this.equations = [
+      { 
+        id: 'eq1', 
+        text: '4Fe + 3O₂ + 6H₂O → 4Fe(OH)₃',
+        description: 'اکسایش آهن در حضور آب و اکسیژن',
+        correct: true 
+      },
+      { 
+        id: 'eq2', 
+        text: 'Fe + 2HCl → FeCl₂ + H₂',
+        description: 'واکنش آهن با اسید کلریدریک',
+        correct: false 
+      },
+      { 
+        id: 'eq3', 
+        text: 'Cu + ZnSO₄ → CuSO₄ + Zn',
+        description: 'واکنش جانشینی (غلط)',
+        correct: false 
+      },
+      { 
+        id: 'eq4', 
+        text: '2Na + 2H₂O → 2NaOH + H₂',
+        description: 'واکنش سدیم با آب',
+        correct: false 
+      }
+    ];
+    
+    this.selectedEquation = null;
+    
+    // ═══════ اسپری‌ها ═══════
+    this.sprays = [
+      { 
+        id: 'spray_zinc', 
+        name: 'اسپری روی (Zn)',
+        color: '#a1a1aa',
+        icon: '⚙️',
+        description: 'روی به عنوان فلز فدا شونده عمل می‌کند',
+        correct: true 
+      },
+      { 
+        id: 'spray_water', 
+        name: 'اسپری آب',
+        color: '#38bdf8',
+        icon: '💧',
+        description: 'آب اکسایش را تشدید می‌کند',
+        correct: false 
+      },
+      { 
+        id: 'spray_salt', 
+        name: 'اسپری نمک',
+        color: '#f1f5f9',
+        icon: '🧂',
+        description: 'نمک خوردگی را تسریع می‌کند',
+        correct: false 
+      },
+      { 
+        id: 'spray_gold', 
+        name: 'اسپری طلا (Au)',
+        color: '#fbbf24',
+        icon: '🥇',
+        description: 'طلا واکنش نمی‌دهد ولی آهن را محافظت نمی‌کند',
+        correct: false 
+      }
+    ];
+    
+    this.selectedSpray = null;
+    
+    // ═══════ وضعیت بازی ═══════
+    this.elapsed = 0;
+    this.finished = false;
+    this.result = null;
+    
+    // ═══════ انیمیشن ═══════
+    this.rustAmount = 0;
+    this.sprayAmount = 0;
+    this.timeProgress = 0;
+    this.finishTimer = 0;   // ⭐ جایگزین setTimeout
+    
+    // ═══════ کلیک‌زون‌ها ═══════
+    this.clickZones = [];
+    
+    // ═══════ برچسب‌ها ═══════
+    this.stageTitle = 'مرحله ۱: کدام فلز زنگ می‌زند؟';
+    this.stageHint = 'روی فلز مورد نظر کلیک کن';
+    
+    // ═══════ موس (برای hover) ═══════
+    this.mouseX = 0;
+    this.mouseY = 0;
+  }
+
+  /* ============================================================
+     مدیریت کلیک
+     ============================================================ */
+  handleClick(x, y) {
+    if (this.finished) return;
+    
+    for (const zone of this.clickZones) {
+      if (x >= zone.x && x <= zone.x + zone.w &&
+          y >= zone.y && y <= zone.y + zone.h) {
+        zone.action();
+        return;
+      }
+    }
+  }
+
+  // ⭐ برای hover افکت
+  handleMouseMove(x, y) {
+    this.mouseX = x;
+    this.mouseY = y;
+  }
+
+  /* ============================================================
+     انتخاب‌ها
+     ============================================================ */
+  selectMetal(metal) {
+    this.selectedMetal = metal;
+    this.stage = 'equation';
+    this.stageTitle = 'مرحله ۲: کدام معادله زنگ‌زدگی آهن است؟';
+    this.stageHint = 'معادله صحیح اکسایش آهن را انتخاب کن';
+    this.clickZones = [];
+  }
+
+  selectEquation(equation) {
+    this.selectedEquation = equation;
+    this.stage = 'spray';
+    this.stageTitle = 'مرحله ۳: کدام اسپری مانع زنگ‌زدگی می‌شود؟';
+    this.stageHint = 'ماده‌ای انتخاب کن که آهن را محافظت کند';
+    this.clickZones = [];
+  }
+
+  selectSpray(spray) {
+    this.selectedSpray = spray;
+    this.stage = 'result';
+    this.stageTitle = 'در حال اسپری کردن...';
+    this.stageHint = '';
+    this.sprayAmount = 0;
+    this.timeProgress = 0;
+    this.finishTimer = 0;
+    this.clickZones = [];
+  }
+
+  /* ============================================================
+     به‌روزرسانی
+     ============================================================ */
+  update(dt) {
+    if (this.finished) return;
+    this.elapsed += dt;
+    
+    if (this.stage === 'result') {
+      // ۱. انیمیشن اسپری
+      if (this.sprayAmount < 1) {
+        this.sprayAmount = Math.min(1, this.sprayAmount + dt * 0.8);
+        return;
+      }
+      
+      // ۲. انیمیشن گذر زمان
+      if (this.timeProgress < 1) {
+        this.timeProgress += dt * 0.4;
+        return;
+      }
+      
+      // ۳. تعیین نتیجه (یک بار)
+      if (!this.result) {
+        const metalOK = this.selectedMetal && this.selectedMetal.correct;
+        const eqOK = this.selectedEquation && this.selectedEquation.correct;
+        const sprayOK = this.selectedSpray && this.selectedSpray.correct;
+        
+        if (metalOK && eqOK && sprayOK) {
+          this.result = 'win';
+          this.rustAmount = 0;
+        } else {
+          this.result = 'lose';
+          this.rustAmount = 1;
+        }
+        
+        this.finishTimer = 0;
+        return;
+      }
+      
+      // ۴. تاخیر قبل از پایان (بدون setTimeout)
+      this.finishTimer += dt;
+      if (this.finishTimer >= 2.5) {
+        this.finished = true;
+      }
+    }
+  }
+
+  /* ============================================================
+     نتیجه
+     ============================================================ */
+  checkResult() {
+    if (!this.finished) return null;
+    
+    if (this.result === 'win') {
+      return {
+        status: 'win',
+        reason: `🎉 آفرین! آهن شما پس از سال‌ها سالم ماند!`,
+        score: 200,
+        formula: {
+          title: 'واکنش اکسایش-کاهش آهن',
+          calc: `4Fe + 3O₂ + 6H₂O → 4Fe(OH)₃`,
+          note: `با انتخاب اسپری روی (Zn)، فلز فدا شونده ایجاد شد. روی به عنوان فلز فعال‌تر به جای آهن اکسید می‌شود: Zn → Zn²⁺ + 2e⁻. این روش «حفاظت کاتدی» نام دارد.`
+        }
+      };
+    } else {
+      const issues = [];
+      if (!this.selectedMetal || !this.selectedMetal.correct) issues.push('فلز اشتباه');
+      if (!this.selectedEquation || !this.selectedEquation.correct) issues.push('معادله اشتباه');
+      if (!this.selectedSpray || !this.selectedSpray.correct) issues.push('اسپری اشتباه');
+      
+      return {
+        status: 'lose',
+        reason: `💥 آهن پس از سال‌ها زنگ زد و از بین رفت!`,
+        formula: {
+          title: 'واکنش زنگ‌زدگی آهن',
+          calc: `4Fe + 3O₂ + 6H₂O → 4Fe(OH)₃`,
+          note: `خطاهای شما: ${issues.join('، ')}. برای محافظت از آهن باید اسپری روی (Zn) استفاده کرد.`
+        }
+      };
+    }
+  }
+
+  /* ============================================================
+     رسم
+     ============================================================ */
+  render() {
+    const ctx = this.ctx;
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    
+    // پس‌زمینه
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(1, '#1e293b');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // عنوان مرحله
+    this.renderStageTitle(ctx);
+    
+    // محتوای مرحله
+    if (this.stage === 'metal') {
+      this.renderMetalSelection(ctx);
+    } else if (this.stage === 'equation') {
+      this.renderEquationSelection(ctx);
+    } else if (this.stage === 'spray') {
+      this.renderSpraySelection(ctx);
+    } else if (this.stage === 'result') {
+      this.renderResult(ctx);
+    }
+  }
+
+  /* ============================================================
+     عنوان و نشانگر مراحل
+     ============================================================ */
+  renderStageTitle(ctx) {
+    const W = this.canvas.width;
+    
+    // نوار بالا
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(0, 0, W, 90);
+    
+    // عنوان
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 24px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.stageTitle, W / 2, 40);
+    
+    // راهنما
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'bold 14px Vazirmatn';
+    ctx.fillText(this.stageHint, W / 2, 70);
+    
+    // نشانگر مراحل
+    const stages = ['فلز', 'معادله', 'اسپری', 'نتیجه'];
+    const stageOrder = { metal: 0, equation: 1, spray: 2, result: 3 };
+    const currentIdx = stageOrder[this.stage];
+    
+    const totalW = stages.length * 100;
+    const startX = W / 2 - totalW / 2 + 50;
+    
+    for (let i = 0; i < stages.length; i++) {
+      const x = startX + i * 100;
+      const active = i <= currentIdx;
+      
+      // دایره
+      ctx.fillStyle = active ? '#22c55e' : 'rgba(100, 116, 139, 0.3)';
+      ctx.beginPath();
+      ctx.arc(x, 115, 8, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // خط اتصال
+      if (i < stages.length - 1) {
+        ctx.strokeStyle = (i < currentIdx) ? '#22c55e' : 'rgba(100, 116, 139, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + 10, 115);
+        ctx.lineTo(x + 90, 115);
+        ctx.stroke();
+      }
+      
+      // برچسب
+      ctx.fillStyle = active ? '#fff' : '#64748b';
+      ctx.font = 'bold 11px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText(stages[i], x, 140);
+    }
+  }
+
+  /* ============================================================
+     مرحله ۱: انتخاب فلز
+     ============================================================ */
+  renderMetalSelection(ctx) {
+    const startX = 100;
+    const startY = 210;
+    const cardW = 180;
+    const cardH = 220;
+    const gap = 30;
+    
+    this.clickZones = [];
+    
+    this.metals.forEach((metal, i) => {
+      const x = startX + i * (cardW + gap);
+      const y = startY;
+      const isSelected = this.selectedMetal && this.selectedMetal.id === metal.id;
+      const isHovered = this.isHovered(x, y, cardW, cardH);
+      
+      this.drawMetalCard(ctx, x, y, cardW, cardH, metal, isSelected, isHovered);
+      
+      this.clickZones.push({
+        x, y, w: cardW, h: cardH,
+        action: () => this.selectMetal(metal)
+      });
+    });
+  }
+
+  isHovered(x, y, w, h) {
+    return this.mouseX >= x && this.mouseX <= x + w &&
+           this.mouseY >= y && this.mouseY <= y + h;
+  }
+
+  drawMetalCard(ctx, x, y, w, h, metal, selected, hovered) {
+    // سایه
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.beginPath();
+    ctx.roundRect(x + 5, y + 5, w, h, 20);
+    ctx.fill();
+    
+    // کارت
+    ctx.fillStyle = selected ? '#1e40af' : (hovered ? '#334155' : '#1e293b');
+    ctx.strokeStyle = selected ? '#38bdf8' : (hovered ? '#38bdf8' : 'rgba(148, 163, 184, 0.3)');
+    ctx.lineWidth = selected ? 4 : 3;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 20);
+    ctx.fill();
+    ctx.stroke();
+    
+    // آیکون
+    ctx.font = 'bold 60px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(metal.icon, x + w / 2, y + 70);
+    ctx.textBaseline = 'alphabetic';
+    
+    // نام فلز
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 22px Vazirmatn';
+    ctx.fillText(metal.name, x + w / 2, y + 135);
+    
+    // نماد شیمیایی
+    ctx.fillStyle = metal.color;
+    ctx.font = 'bold 32px Vazirmatn';
+    ctx.fillText(metal.symbol, x + w / 2, y + 185);
+    
+    // راهنمای hover
+    if (hovered) {
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 12px Vazirmatn';
+      ctx.fillText('👆 کلیک کن', x + w / 2, y + h - 15);
+    }
+  }
+
+  /* ============================================================
+     مرحله ۲: انتخاب معادله
+     ============================================================ */
+  renderEquationSelection(ctx) {
+    const W = this.canvas.width;
+    
+    // نمایش فلز انتخاب‌شده
+    if (this.selectedMetal) {
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+      ctx.beginPath();
+      ctx.roundRect(W / 2 - 200, 165, 400, 50, 15);
+      ctx.fill();
+      
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 16px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.fillText(`فلز: ${this.selectedMetal.name} (${this.selectedMetal.symbol})`, W / 2, 197);
+    }
+    
+    const startY = 240;
+    const cardH = 85;
+    const cardW = 800;
+    const startX = (W - cardW) / 2;
+    const gap = 15;
+    
+    this.clickZones = [];
+    
+    this.equations.forEach((eq, i) => {
+      const x = startX;
+      const y = startY + i * (cardH + gap);
+      const isSelected = this.selectedEquation && this.selectedEquation.id === eq.id;
+      const isHovered = this.isHovered(x, y, cardW, cardH);
+      
+      // سایه
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.roundRect(x + 4, y + 4, cardW, cardH, 15);
+      ctx.fill();
+      
+      // کارت
+      ctx.fillStyle = isSelected ? '#1e40af' : (isHovered ? '#334155' : '#1e293b');
+      ctx.strokeStyle = isSelected ? '#38bdf8' : (isHovered ? '#38bdf8' : 'rgba(148, 163, 184, 0.3)');
+      ctx.lineWidth = isSelected ? 4 : 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, cardW, cardH, 15);
+      ctx.fill();
+      ctx.stroke();
+      
+      // معادله
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 22px Vazirmatn';
+      ctx.textAlign = 'right';
+      ctx.fillText(eq.text, x + cardW - 30, y + 40);
+      
+      // توضیح
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 13px Vazirmatn';
+      ctx.fillText(eq.description, x + cardW - 30, y + 68);
+      
+      this.clickZones.push({
+        x, y, w: cardW, h: cardH,
+        action: () => this.selectEquation(eq)
+      });
+    });
+  }
+
+  /* ============================================================
+     مرحله ۳: انتخاب اسپری
+     ============================================================ */
+  renderSpraySelection(ctx) {
+    const W = this.canvas.width;
+    
+    // نمایش انتخاب‌های قبلی
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+    ctx.beginPath();
+    ctx.roundRect(W / 2 - 400, 165, 800, 45, 12);
+    ctx.fill();
+    
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 13px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      `فلز: ${this.selectedMetal ? this.selectedMetal.name : '-'}  |  معادله: ${this.selectedEquation ? this.selectedEquation.text : '-'}`,
+      W / 2, 192
+    );
+    
+    const startX = 50;
+    const startY = 240;
+    const cardW = 220;
+    const cardH = 250;
+    const gap = 15;
+    
+    this.clickZones = [];
+    
+    this.sprays.forEach((spray, i) => {
+      const x = startX + i * (cardW + gap);
+      const y = startY;
+      const isSelected = this.selectedSpray && this.selectedSpray.id === spray.id;
+      const isHovered = this.isHovered(x, y, cardW, cardH);
+      
+      // سایه
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.beginPath();
+      ctx.roundRect(x + 5, y + 5, cardW, cardH, 20);
+      ctx.fill();
+      
+      // کارت
+      ctx.fillStyle = isSelected ? '#1e40af' : (isHovered ? '#334155' : '#1e293b');
+      ctx.strokeStyle = isSelected ? '#38bdf8' : (isHovered ? '#38bdf8' : 'rgba(148, 163, 184, 0.3)');
+      ctx.lineWidth = isSelected ? 4 : 3;
+      ctx.beginPath();
+      ctx.roundRect(x, y, cardW, cardH, 20);
+      ctx.fill();
+      ctx.stroke();
+      
+      // آیکون
+      ctx.font = 'bold 70px Vazirmatn';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(spray.icon, x + cardW / 2, y + 75);
+      ctx.textBaseline = 'alphabetic';
+      
+      // نام
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 18px Vazirmatn';
+      ctx.fillText(spray.name, x + cardW / 2, y + 145);
+      
+      // توضیح (چند خطی)
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 12px Vazirmatn';
+      
+      const words = spray.description.split(' ');
+      let line = '';
+      let lineY = y + 180;
+      
+      words.forEach(word => {
+        const test = line + word + ' ';
+        if (ctx.measureText(test).width > cardW - 40 && line !== '') {
+          ctx.fillText(line.trim(), x + cardW / 2, lineY);
+          line = word + ' ';
+          lineY += 20;
+        } else {
+          line = test;
+        }
+      });
+      if (line) ctx.fillText(line.trim(), x + cardW / 2, lineY);
+      
+      this.clickZones.push({
+        x, y, w: cardW, h: cardH,
+        action: () => this.selectSpray(spray)
+      });
+    });
+  }
+
+  /* ============================================================
+     مرحله ۴: نتیجه
+     ============================================================ */
+  renderResult(ctx) {
+    if (this.sprayAmount < 1) {
+      this.renderSprayAnimation(ctx);
+      return;
+    }
+    
+    if (this.timeProgress < 1) {
+      this.renderTimeSkip(ctx);
+      return;
+    }
+    
+    if (this.result === 'win') {
+      this.renderWinScene(ctx);
+    } else if (this.result === 'lose') {
+      this.renderLoseScene(ctx);
+    }
+  }
+
+  /* ============================================================
+     انیمیشن اسپری
+     ============================================================ */
+  renderSprayAnimation(ctx) {
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 24px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('💨 در حال اسپری کردن...', cx, cy - 130);
+    
+    // فلز
+    ctx.fillStyle = this.selectedMetal ? this.selectedMetal.color : '#64748b';
+    ctx.beginPath();
+    ctx.roundRect(cx - 80, cy - 30, 160, 80, 15);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 40px Vazirmatn';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this.selectedMetal ? this.selectedMetal.symbol : 'Fe', cx, cy + 10);
+    ctx.textBaseline = 'alphabetic';
+    
+    // قوطی اسپری (حرکت از چپ به راست)
+    const sprayX = cx - 250 + (this.sprayAmount * 200);
+    const sprayY = cy - 180;
+    
+    ctx.fillStyle = this.selectedSpray ? this.selectedSpray.color : '#94a3b8';
+    ctx.beginPath();
+    ctx.roundRect(sprayX - 30, sprayY, 60, 100, 12);
+    ctx.fill();
+    
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(sprayX - 20, sprayY - 15, 40, 20, 5);
+    ctx.fill();
+    
+    ctx.font = 'bold 30px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this.selectedSpray ? this.selectedSpray.icon : '💨', sprayX, sprayY + 55);
+    ctx.textBaseline = 'alphabetic';
+    
+    // ذرات اسپری
+    for (let i = 0; i < 30; i++) {
+      const t = ((Date.now() / 300 + i * 0.3) % 1);
+      const px = sprayX + 30 + t * (cx - sprayX);
+      const py = sprayY + 50 + Math.sin(i * 1.5 + t * 10) * 30;
+      
+      const alpha = 1 - t;
+      ctx.fillStyle = `rgba(148, 163, 184, ${alpha * 0.7})`;
+      ctx.beginPath();
+      ctx.arc(px, py, 3 + Math.random() * 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // نوار پیشرفت
+    const barW = 400;
+    const barH = 12;
+    const barX = cx - barW / 2;
+    const barY = cy + 130;
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW, barH, 6);
+    ctx.fill();
+    
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW * this.sprayAmount, barH, 6);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round(this.sprayAmount * 100)}%`, cx, barY + 35);
+  }
+
+  /* ============================================================
+     نمایش گذر زمان با لوگوی خانه و باب اسفنجی
+     ============================================================ */
+  renderTimeSkip(ctx) {
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    
+    // پس‌زمینه تیره نیمه‌شفاف
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.fillRect(0, 0, W, H);
+    
+    // ═══ لوگوی خانه (🏠) ═══
+    ctx.font = 'bold 100px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const pulse = Math.sin(Date.now() / 400) * 5;
+    ctx.fillText('🏠', cx - 150, cy - 60 + pulse);
+    
+    // ═══ لوگوی باب اسفنجی (🧽) ═══
+    ctx.fillText('🧽', cx + 150, cy - 60 - pulse);
+    
+    // ═══ متن "سال بعد" ═══
+    const years = Math.floor(this.timeProgress * 10);
+    
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 44px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${years} سال بعد...`, cx, cy + 80);
+    
+    ctx.textBaseline = 'alphabetic';
+    
+    // ═══ نوار پیشرفت ═══
+    const barW = 500;
+    const barH = 24;
+    const barX = cx - barW / 2;
+    const barY = cy + 140;
+    
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW, barH, 12);
+    ctx.fill();
+    
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.roundRect(barX, barY, barW * this.timeProgress, barH, 12);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('⏳ زمان در حال گذر است...', cx, barY + 50);
+  }
+
+  /* ============================================================
+     صحنه برد
+     ============================================================ */
+  renderWinScene(ctx) {
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    
+    // پس‌زمینه جشن
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W / 2);
+    grad.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+    grad.addColorStop(1, 'rgba(15, 23, 42, 1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // لوگو
+    ctx.font = 'bold 100px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🏆', cx, cy - 130);
+    ctx.textBaseline = 'alphabetic';
+    
+    // متن برد
+    ctx.fillStyle = '#22c55e';
+    ctx.font = 'bold 36px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('🎉 آهن سالم ماند!', cx, cy - 20);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px Vazirmatn';
+    ctx.fillText('پس از ۱۰ سال، آهن شما کاملاً سالم است', cx, cy + 25);
+    
+    // آهن سالم
+    ctx.fillStyle = '#64748b';
+    ctx.beginPath();
+    ctx.roundRect(cx - 60, cy + 60, 120, 60, 12);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 30px Vazirmatn';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Fe', cx - 30, cy + 90);
+    ctx.font = 'bold 40px Vazirmatn';
+    ctx.fillText('🔩', cx + 30, cy + 90);
+    ctx.textBaseline = 'alphabetic';
+    
+    // پیام آموزشی
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = 'bold 14px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('💡 روی (Zn) به عنوان فلز فدا شونده، آهن را محافظت کرد', cx, cy + 160);
+  }
+
+  /* ============================================================
+     صحنه باخت
+     ============================================================ */
+  renderLoseScene(ctx) {
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    
+    // پس‌زمینه غم
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, W / 2);
+    grad.addColorStop(0, 'rgba(220, 38, 38, 0.3)');
+    grad.addColorStop(1, 'rgba(15, 23, 42, 1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // لوگو
+    ctx.font = 'bold 100px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('💥', cx, cy - 130);
+    ctx.textBaseline = 'alphabetic';
+    
+    // متن باخت
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 36px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('😢 آهن زنگ زد!', cx, cy - 20);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px Vazirmatn';
+    ctx.fillText('پس از ۱۰ سال، آهن شما کاملاً خورده شد', cx, cy + 25);
+    
+    // آهن زنگ زده
+    ctx.fillStyle = '#7c2d12';
+    ctx.beginPath();
+    ctx.roundRect(cx - 60, cy + 60, 120, 60, 12);
+    ctx.fill();
+    
+    // ذرات زنگ
+    for (let i = 0; i < 15; i++) {
+      const px = cx - 60 + Math.random() * 120;
+      const py = cy + 60 + Math.random() * 60;
+      ctx.fillStyle = `rgba(180, 83, 9, ${Math.random() * 0.7 + 0.3})`;
+      ctx.beginPath();
+      ctx.arc(px, py, 3 + Math.random() * 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px Vazirmatn';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Fe₂O₃', cx, cy + 90);
+    ctx.textBaseline = 'alphabetic';
+    
+    // پیام آموزشی
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 14px Vazirmatn';
+    ctx.textAlign = 'center';
+    ctx.fillText('💡 برای محافظت، اسپری روی (Zn) لازم بود', cx, cy + 160);
+  }
+}
+// ═══════ مرحله ۶: طناب و قرقره ═══════
+/* ══════════════════════════════════════════════════════════════
+   🪢 مرحله ۶: طناب و قرقره (نیروی کشش) - سه بعدی
+   ══════════════════════════════════════════════════════════════
+   مفهوم: نیروی کشش، مزیت مکانیکی، قانون کار
+   هدف: با کشیدن طناب، جعبه را به هدف برسان
+   
+   فرمول‌ها:
+   - نیروی کشش: T = (m·g) / n
+   - مزیت مکانیکی: MA = n
+   - کار: W = F·d
+*/
+class Level6_Pulley3D extends BaseLevel {
+  init() {
+    // ═══════ تنظیمات فیزیکی (واحد SI) ═══════
+    this.g = 9.8;
+    this.boxMass = 100;          // جرم جعبه (kg)
+    this.frictionCoef = 0.3;     // ضریب اصطکاک زمین
+    this.pulleyCount = 2;        // تعداد قرقره‌ها (مزیت مکانیکی)
+    
+    // ═══════ موقعیت‌های ۳ بعدی ═══════
+    this.boxStartX = -4;
+    this.boxEndX = 4;
+    this.boxX = this.boxStartX;
+    this.boxY = 0.5;
+    this.boxZ = 0;
+    
+    // ═══════ حالت کشیدن ═══════
+    this.pulling = false;
+    this.pullPower = 0;          // قدرت کشیدن فعلی (0 تا 1)
+    this.elapsed = 0;
+    this.finished = false;
+    this.won = false;
+    
+    // ═══════ سرعت و شتاب جعبه ═══════
+    this.boxVelocity = 0;
+    
+    // ═══════ فیزیک کشیدن ═══════
+    this.maxPullForce = 400;     // حداکثر نیروی کشیدن بازیکن (N)
+    this.baseResistance = 50;    // مقاومت پایه (N)
+    
+    // ═══════ Three.js ═══════
+    this.scene = null;
+    this.camera = null;
+    this.renderer = null;
+    this.objects = {};
+    
+    // ═══════ موقعیت‌های اولیه برای reset ═══════
+    this.initialCameraPos = { x: 0, y: 4, z: 12 };
+  }
+
+  /* ============================================================
+     ساخت صحنه ۳ بعدی
+     ============================================================ */
+  initThreeJS() {
+    // ═══ صحنه ═══
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x0a1628);
+    this.scene.fog = new THREE.Fog(0x0a1628, 15, 30);
+    
+    // ═══ دوربین ═══
+    const aspect = this.canvas.width / this.canvas.height;
+    this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+    this.camera.position.set(0, 5, 14);
+    this.camera.lookAt(0, 1, 0);
+    
+    // ═══ رندرر ═══
+    this.renderer = new THREE.WebGLRenderer({ 
+      canvas: this.canvas,
+      antialias: true,
+      alpha: false
+    });
+    this.renderer.setSize(this.canvas.width, this.canvas.height, false);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    // ═══ نورپردازی ═══
+    this.setupLights();
+    
+    // ═══ ساخت اجزای صحنه ═══
+    this.buildGround();
+    this.buildBox();
+    this.buildPulleys();
+    this.buildRope();
+    this.buildTarget();
+    
+    // ═══ ستاره‌های پس‌زمینه ═══
+    this.buildStars();
+  }
+
+  setupLights() {
+    // نور محیطی
+    const ambient = new THREE.AmbientLight(0x404060, 0.5);
+    this.scene.add(ambient);
+    
+    // نور اصلی (خورشید)
+    const sun = new THREE.DirectionalLight(0xffffff, 1);
+    sun.position.set(8, 15, 10);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 2048;
+    sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.left = -15;
+    sun.shadow.camera.right = 15;
+    sun.shadow.camera.top = 15;
+    sun.shadow.camera.bottom = -15;
+    this.scene.add(sun);
+    
+    // نور آبی از پایین
+    const blueLight = new THREE.PointLight(0x38bdf8, 0.5, 20);
+    blueLight.position.set(-5, 2, -5);
+    this.scene.add(blueLight);
+    
+    // نور بنفش
+    const purpleLight = new THREE.PointLight(0xa78bfa, 0.5, 20);
+    purpleLight.position.set(5, 2, 5);
+    this.scene.add(purpleLight);
+  }
+
+  buildGround() {
+    // زمین
+    const groundGeo = new THREE.PlaneGeometry(40, 40);
+    const groundMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    this.scene.add(ground);
+    
+    // خطوط شبکه روی زمین
+    const grid = new THREE.GridHelper(40, 40, 0x38bdf8, 0x334155);
+    grid.position.y = 0.01;
+    grid.material.opacity = 0.3;
+    grid.material.transparent = true;
+    this.scene.add(grid);
+  }
+
+  buildBox() {
+    // ═══ بدنه جعبه ═══
+    const boxGeo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+    const boxMat = new THREE.MeshStandardMaterial({
+      color: 0x8b5cf6,
+      roughness: 0.4,
+      metalness: 0.3
+    });
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    box.castShadow = true;
+    box.receiveShadow = true;
+    box.position.set(this.boxX, this.boxY, this.boxZ);
+    this.scene.add(box);
+    this.objects.box = box;
+    
+    // ═══ نوارهای تزئینی ═══
+    const stripeGeo = new THREE.BoxGeometry(1.55, 0.2, 1.55);
+    const stripeMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24 });
+    for (const y of [-0.5, 0.5]) {
+      const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+      stripe.position.y = y;
+      box.add(stripe);
+    }
+    
+    // ═══ متن روی جعبه ═══
+    const canvas2d = document.createElement('canvas');
+    canvas2d.width = 256;
+    canvas2d.height = 256;
+    const ctx2d = canvas2d.getContext('2d');
+    ctx2d.fillStyle = '#8b5cf6';
+    ctx2d.fillRect(0, 0, 256, 256);
+    ctx2d.fillStyle = '#ffffff';
+    ctx2d.font = 'bold 100px Arial';
+    ctx2d.textAlign = 'center';
+    ctx2d.textBaseline = 'middle';
+    ctx2d.fillText('100kg', 128, 128);
+    
+    const texture = new THREE.CanvasTexture(canvas2d);
+    const labelMat = new THREE.MeshStandardMaterial({ map: texture });
+    const labelGeo = new THREE.PlaneGeometry(1.2, 1.2);
+    const label = new THREE.Mesh(labelGeo, labelMat);
+    label.position.z = 0.76;
+    box.add(label);
+  }
+
+  buildPulleys() {
+    // ═══ قرقره اصلی (روی سقف) ═══
+    this.buildPulley(0, 6, 0, 0.6);
+    
+    // ═══ قرقره متحرک (روی جعبه) ═══
+    this.buildPulley(0, 2.5, 0, 0.4);
+  }
+
+  buildPulley(x, y, z, radius) {
+    const group = new THREE.Group();
+    
+    // ═══ چرخ قرقره ═══
+    const wheelGeo = new THREE.CylinderGeometry(radius, radius, 0.2, 32);
+    const wheelMat = new THREE.MeshStandardMaterial({
+      color: 0xfbbf24,
+      roughness: 0.3,
+      metalness: 0.8
+    });
+    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.castShadow = true;
+    group.add(wheel);
+    
+    // ═══ محور قرقره ═══
+    const axleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.4, 16);
+    const axleMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.9 });
+    const axle = new THREE.Mesh(axleGeo, axleMat);
+    axle.rotation.z = Math.PI / 2;
+    group.add(axle);
+    
+    // ═══ براکت قرقره ═══
+    const bracketGeo = new THREE.TorusGeometry(radius + 0.1, 0.05, 8, 32);
+    const bracketMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
+    const bracket = new THREE.Mesh(bracketGeo, bracketMat);
+    bracket.rotation.y = Math.PI / 2;
+    group.add(bracket);
+    
+    group.position.set(x, y, z);
+    this.scene.add(group);
+    
+    // ذخیره برای انیمیشن
+    if (y > 5) {
+      this.objects.topPulley = group;
+      this.objects.topPulleyWheel = wheel;
+    } else {
+      this.objects.movingPulley = group;
+      this.objects.movingPulleyWheel = wheel;
+    }
+  }
+
+  buildRope() {
+    // ═══ طناب منحنی با TubeGeometry ═══
+    this.ropeCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 6, 0),
+      new THREE.Vector3(2, 5, 0),
+      new THREE.Vector3(3, 3, 0),
+      new THREE.Vector3(2, 1, 0),
+      new THREE.Vector3(this.boxX, 1.5, 0)
+    ]);
+    
+    const tubeGeo = new THREE.TubeGeometry(this.ropeCurve, 64, 0.06, 8, false);
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const rope = new THREE.Mesh(tubeGeo, tubeMat);
+    rope.castShadow = true;
+    this.scene.add(rope);
+    this.objects.rope = rope;
+  }
+
+  updateRope() {
+    // ═══ محاسبه منحنی جدید طناب ═══
+    const boxTopY = this.boxY + 0.75;
+    const movingPulleyY = boxTopY + 1.5;
+    
+    // موقعیت قرقره متحرک
+    if (this.objects.movingPulley) {
+      this.objects.movingPulley.position.set(this.boxX, movingPulleyY, 0);
+    }
+    
+    const points = [
+      new THREE.Vector3(0.5, 6, 0),                    // از قرقره اصلی
+      new THREE.Vector3(2, 5.5, 0),
+      new THREE.Vector3(2.5, movingPulleyY + 0.4, 0), // به قرقره متحرک
+      new THREE.Vector3(this.boxX + 0.3, movingPulleyY, 0),
+      new THREE.Vector3(this.boxX, boxTopY, 0)
+    ];
+    
+    this.ropeCurve.points = points;
+    
+    // ساخت مجدد طناب
+    const tubeGeo = new THREE.TubeGeometry(this.ropeCurve, 64, 0.06, 8, false);
+    
+    // حذف طناب قدیمی
+    this.scene.remove(this.objects.rope);
+    this.objects.rope.geometry.dispose();
+    
+    // ساخت طناب جدید
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const rope = new THREE.Mesh(tubeGeo, tubeMat);
+    rope.castShadow = true;
+    this.scene.add(rope);
+    this.objects.rope = rope;
+  }
+
+  buildTarget() {
+    // ═══ نشانگر هدف ═══
+    const targetGeo = new THREE.RingGeometry(0.8, 1, 32);
+    const targetMat = new THREE.MeshBasicMaterial({
+      color: 0x22c55e,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.7
+    });
+    const target = new THREE.Mesh(targetGeo, targetMat);
+    target.rotation.x = -Math.PI / 2;
+    target.position.set(this.boxEndX, 0.02, 0);
+    this.scene.add(target);
+    this.objects.target = target;
+    
+    // ═══ ستون هدف ═══
+    const pillarGeo = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.3 });
+    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+    pillar.position.set(this.boxEndX, 1.5, 0);
+    this.scene.add(pillar);
+  }
+
+  buildStars() {
+    const starsGeo = new THREE.BufferGeometry();
+    const starsCount = 500;
+    const positions = new Float32Array(starsCount * 3);
+    
+    for (let i = 0; i < starsCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 100;
+      positions[i + 1] = Math.random() * 50 + 5;
+      positions[i + 2] = (Math.random() - 0.5) * 100;
+    }
+    
+    starsGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const starsMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+    const stars = new THREE.Points(starsGeo, starsMat);
+    this.scene.add(stars);
+  }
+
+  /* ============================================================
+     کنترل ورودی
+     ============================================================ */
+  handleInput(action, pressed) {
+    if (this.finished) return;
+    
+    if (action === 'brake') {  // دکمه Space = کشیدن
+      this.pulling = pressed;
+      if (pressed) {
+        this.pullPower = Math.min(1, this.pullPower + 0.1);
+      }
+    }
+  }
+
+  /* ============================================================
+     به‌روزرسانی فیزیک
+     ============================================================ */
+  update(dt) {
+    if (this.finished) return;
+    this.elapsed += dt;
+    
+    // ═══ محاسبه نیروی کشش ═══
+    const pullForce = this.pulling ? this.maxPullForce * this.pullPower : 0;
+    
+    // ═══ نیروی لازم برای غلبه بر اصطکاک ═══
+    const normalForce = this.boxMass * this.g;  // N = mg
+    const frictionForce = this.frictionCoef * normalForce;  // f = μN
+    
+    // ═══ مزیت مکانیکی ═══
+    const mechanicalAdvantage = this.pulleyCount;
+    const effectiveForce = pullForce * mechanicalAdvantage;
+    
+    // ═══ نیروی خالص ═══
+    const netForce = effectiveForce - frictionForce;
+    
+    // ═══ شتاب: F = ma ═══
+    const acceleration = netForce / this.boxMass;
+    
+    // ═══ به‌روزرسانی سرعت و موقعیت ═══
+    this.boxVelocity += acceleration * dt;
+    this.boxVelocity = Math.max(0, this.boxVelocity);  // نمی‌تواند منفی باشد (جعبه برنمی‌گردد)
+    
+    // اصطکاک سرعت را کم می‌کند وقتی کشیدن متوقف است
+    if (!this.pulling && this.boxVelocity > 0) {
+      this.boxVelocity = Math.max(0, this.boxVelocity - frictionForce * dt / this.boxMass);
+    }
+    
+    this.boxX += this.boxVelocity * dt;
+    this.boxX = Math.min(this.boxEndX, this.boxX);  // محدودیت
+    
+    // ═══ به‌روزرسانی Three.js ═══
+    if (this.objects.box) {
+      this.objects.box.position.x = this.boxX;
+      
+      // چرخش جزئی جعبه (افکت حرکت)
+      this.objects.box.rotation.z = Math.sin(this.boxX * 4) * 0.02 * Math.min(1, this.boxVelocity);
+    }
+    
+    // ═══ انیمیشن قرقره ═══
+    if (this.objects.topPulleyWheel) {
+      this.objects.topPulleyWheel.rotation.x += this.boxVelocity * 0.5 * dt;
+    }
+    if (this.objects.movingPulleyWheel) {
+      this.objects.movingPulleyWheel.rotation.x += this.boxVelocity * 0.5 * dt;
+    }
+    
+    // ═══ به‌روزرسانی طناب ═══
+    this.updateRope();
+    
+    // ═══ بررسی برد ═══
+    if (this.boxX >= this.boxEndX - 0.1) {
+      this.finished = true;
+      this.won = true;
+    }
+    
+    // ═══ تایم‌اوت ═══
+    if (this.elapsed > 60) {
+      this.finished = true;
+      this.won = false;
+    }
+    
+    // ═══ کاهش تدریجی pullPower وقتی رها می‌شود ═══
+    if (!this.pulling) {
+      this.pullPower = Math.max(0, this.pullPower - dt * 0.5);
+    }
+  }
+
+  /* ============================================================
+     بررسی نتیجه
+     ============================================================ */
+  checkResult() {
+    if (!this.finished) return null;
+    
+    const work = this.boxMass * this.g * this.frictionCoef * (this.boxEndX - this.boxStartX);
+    const forceNeeded = (this.boxMass * this.g * this.frictionCoef) / this.pulleyCount;
+    
+    if (this.won) {
+      return {
+        status: 'win',
+        reason: `🎉 جعبه به هدف رسید!`,
+        score: 180,
+        formula: {
+          title: 'نیروی کشش و مزیت مکانیکی',
+          calc: `T = f / n = ${(this.boxMass * this.g * this.frictionCoef).toFixed(0)} / ${this.pulleyCount} = ${forceNeeded.toFixed(0)} N`,
+          note: `جعبه ${this.boxMass} کیلوگرمی با ضریب اصطکاک ${this.frictionCoef} روی زمین کشیده شد. با استفاده از ${this.pulleyCount} قرقره، مزیت مکانیکی برابر ${this.pulleyCount} شد و نیروی لازم به ${forceNeeded.toFixed(0)} نیوتن کاهش یافت. کار انجام‌شده: ${work.toFixed(0)} ژول.`
+        }
+      };
+    } else {
+      return {
+        status: 'lose',
+        reason: `😢 زمان تمام شد! جعبه به هدف نرسید.`,
+        formula: {
+          title: 'نیروی کشش',
+          calc: `T = (m·g·μ) / n = ${(this.boxMass * this.g * this.frictionCoef).toFixed(0)} / ${this.pulleyCount} = ${forceNeeded.toFixed(0)} N`,
+          note: `نیروی اصطکاک: ${(this.boxMass * this.g * this.frictionCoef).toFixed(0)} نیوتن. نیروی کششی که اعمال کردی کافی نبود.`
+        }
+      };
+    }
+  }
+
+  /* ============================================================
+     رسم
+     ============================================================ */
+  render() {
+    // اگر Three.js هنوز ساخته نشده، بساز
+    if (!this.scene) {
+      this.initThreeJS();
+    }
+    
+    // رندر صحنه
+    this.renderer.render(this.scene, this.camera);
+    
+    // ═══ HUD روی کنواس اصلی ═══
+    // چون WebGL کنواس رو پر می‌کنه، از HTML overlay استفاده نمی‌کنیم
+    // در عوض، می‌توانیم یک canvas دومی برای HUD داشته باشیم
+    // یا از همان canvas با Three.js استفاده کنیم و HUD رو در HTML بذاریم
+    
+    // ═══ رسم HUD با Canvas 2D بعد از رندر Three.js ═══
+    this.renderHUDOverlay();
+  }
+
+  renderHUDOverlay() {
+    // نکته: چون WebGL کنواس رو قفل می‌کنه، HUD رو در HTML کنار کنواس نمایش می‌دهیم
+    // این تابع صرفاً برای موارد ضروری است
+    
+    // راه‌حل: اطلاعات رو در gameControls نمایش می‌دهیم
+    this.updateHTMLControls();
+  }
+
+  updateHTMLControls() {
+    // به‌روزرسانی دکمه‌ها (فقط یک بار در هر ثانیه)
+    if (Math.floor(this.elapsed * 10) !== this.lastUpdateFrame) {
+      this.lastUpdateFrame = Math.floor(this.elapsed * 10);
+      
+      const controlsDiv = document.getElementById('gameControls');
+      if (!controlsDiv) return;
+      
+      const distance = this.boxEndX - this.boxX;
+      const progress = ((this.boxX - this.boxStartX) / (this.boxEndX - this.boxStartX)) * 100;
+      const frictionForce = this.boxMass * this.g * this.frictionCoef;
+      const forceNeeded = frictionForce / this.pulleyCount;
+      
+      // پاک کردن و ساخت مجدد
+      controlsDiv.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:15px;width:100%;max-width:900px;margin:0 auto;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div style="background:rgba(56,189,248,0.15);padding:12px;border-radius:12px;text-align:center;color:#fff;">
+              <div style="font-size:12px;color:#94a3b8;">📦 موقعیت جعبه</div>
+              <div style="font-size:20px;font-weight:900;color:#38bdf8;">${this.boxX.toFixed(2)} m</div>
+            </div>
+            <div style="background:rgba(251,191,36,0.15);padding:12px;border-radius:12px;text-align:center;color:#fff;">
+              <div style="font-size:12px;color:#94a3b8;">💪 نیروی کشش</div>
+              <div style="font-size:20px;font-weight:900;color:#fbbf24;">${(this.pullPower * this.maxPullForce).toFixed(0)} N</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.15);padding:12px;border-radius:12px;text-align:center;color:#fff;">
+              <div style="font-size:12px;color:#94a3b8;">⚖️ اصطکاک</div>
+              <div style="font-size:20px;font-weight:900;color:#ef4444;">${frictionForce.toFixed(0)} N</div>
+            </div>
+            <div style="background:rgba(34,197,94,0.15);padding:12px;border-radius:12px;text-align:center;color:#fff;">
+              <div style="font-size:12px;color:#94a3b8;">🎯 فاصله تا هدف</div>
+              <div style="font-size:20px;font-weight:900;color:#22c55e;">${distance.toFixed(2)} m</div>
+            </div>
+          </div>
+          
+          <div style="background:rgba(0,0,0,0.5);padding:15px;border-radius:12px;">
+            <div style="display:flex;justify-content:space-between;color:#fff;font-weight:700;font-size:13px;margin-bottom:8px;">
+              <span>📊 پیشرفت کشیدن</span>
+              <span>${progress.toFixed(0)}%</span>
+            </div>
+            <div style="height:12px;background:rgba(100,116,139,0.3);border-radius:6px;overflow:hidden;">
+              <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#22c55e,#34d399);transition:width 0.3s;"></div>
+            </div>
+          </div>
+          
+          <div style="text-align:center;color:#a78bfa;font-weight:700;font-size:14px;">
+            💡 برای کشیدن، دکمه Space را نگه دار یا از دکمه زیر استفاده کن
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+  /* ══════════════════════════════════════════════════════════════
+     🎮 موتور اصلی بازی
+     ══════════════════════════════════════════════════════════════ */
+  class GameEngine {
+    constructor() {
+      this.canvas = document.getElementById('gameCanvas');
+      this.ctx = this.canvas.getContext('2d');
+      
+      this.levels = [];
+      this.currentLevel = null;
+      this.currentLevelIndex = -1;
+      this.playingLevelIndex = -1;
+      
+      this.completedLevels = new Set();
+      this.totalScore = 0;
+      
+      this.lastTime = 0;
+      this.animationId = null;
+      this.running = false;
+      this.inputs = {};
+      
+      this.setupUI();
+      this.loadProgress();
+      this.registerLevels();
+      this.renderLevelsScreen();
+    }
+  
+    /* ⭐️ ثبت مراحل — اینجا مراحل جدید اضافه کنید */
+    registerLevels() {
+      this.levels = [
+        {
+          id: 1,
+          name: 'ترمز به موقع',
+          icon: '🚗',
+          description: 'ماشین را در ناحیه پارک سبز متوقف کنید',
+          Class: Level1_Brake,
+          hint: 'برای ترمز دکمه را نگه دارید یا Space'
+        },
+        {
+          id: 2,
+          name: 'پرتابه',
+          icon: '🏹',
+          description: 'توپ را با زاویه و سرعت مناسب به هدف برسان',
+          Class: Level2_Projectile,
+          hint: '◀ ▶ زاویه، ▲ ▼ سرعت، Space شلیک'
+        },
+        {
+          id: 3,
+          name: 'تعادل اهرم',
+          icon: '⚖️',
+          description: 'وزنه‌ها را جابه‌جا کن تا الاکلنگ متعادل شود',
+          Class: Level3_Balance,
+          hint: 'وزنه را انتخاب کن و با ⬅ ➡ جابه‌جا کن'
+        },
+        {
+          id: 4,
+          name: 'مدار الکتریکی',
+          icon: '⚡',
+          description: 'مقاومت را تنظیم کنید تا لامپ با روشنایی مطلوب روشن شود',
+          Class: Level4_Circuit,
+          hint: 'با دکمه‌های ▲ ▼ مقاومت را تنظیم کنید'
+        },
+        {
+      id: 5,
+      name: 'زنگ‌زدگی آهن',
+      icon: '🧪',
+      description: 'فلز و معادله و اسپری درست را انتخاب کن',
+      Class: Level5_Corrosion,
+      hint: '👆 روی کارت‌ها کلیک کن'
+        }
+      ];
+    }
+  
+    /* ===== UI ===== */
+    setupUI() {
+      document.getElementById('resetBtn').addEventListener('click', () => this.restartLevel());
+      document.getElementById('backBtn').addEventListener('click', () => this.showLevelsScreen());
+      
+      document.getElementById('modalBackBtn').addEventListener('click', () => {
+        document.getElementById('modal').classList.remove('active');
+        this.showLevelsScreen();
+      });
+      document.getElementById('modalNextBtn').addEventListener('click', () => {
+        document.getElementById('modal').classList.remove('active');
+        this.nextLevel();
+      });
+      
+      // کیبورد
+      document.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        switch (e.code) {
+          case 'Space':
+            e.preventDefault();
+            if (this.currentLevel instanceof Level2_Projectile) {
+              this.setInput('launch', true);
+              setTimeout(() => this.setInput('launch', false), 100);
+            } else if (this.currentLevel instanceof Level3_Balance) {
+              this.setInput('selectNext', true);
+              setTimeout(() => this.setInput('selectNext', false), 100);
+            } else {
+              this.setInput('brake', true);
+            }
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            this.setInput('angleDown', true);
+            this.setInput('rotateLeft', true);
+            this.setInput('moveLeft', true);
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            this.setInput('angleUp', true);
+            this.setInput('rotateRight', true);
+            this.setInput('moveRight', true);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            this.setInput('speedUp', true);
+            this.setInput('rUp', true);
+            break;
+          case 'ArrowDown':
+            e.preventDefault();
+            this.setInput('speedDown', true);
+            this.setInput('rDown', true);
+            break;
+        }
+      });
+      
+      document.addEventListener('keyup', (e) => {
+        switch (e.code) {
+          case 'Space':
+            this.setInput('brake', false);
+            this.setInput('selectNext', false);
+            break;
+          case 'ArrowLeft':
+            this.setInput('angleDown', false);
+            this.setInput('rotateLeft', false);
+            this.setInput('moveLeft', false);
+            break;
+          case 'ArrowRight':
+            this.setInput('angleUp', false);
+            this.setInput('rotateRight', false);
+            this.setInput('moveRight', false);
+            break;
+          case 'ArrowUp':
+            this.setInput('speedUp', false);
+            this.setInput('rUp', false);
+            break;
+          case 'ArrowDown':
+            this.setInput('speedDown', false);
+            this.setInput('rDown', false);
+            break;
+        }
+      });
+      // ⭐ کلیک روی کنواس (برای مرحله ۵)
+      this.canvas.addEventListener('click', (e) => {
+      if (!this.currentLevel) return;
+      if (typeof this.currentLevel.handleClick !== 'function') return;
+  
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+  
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+  
+      this.currentLevel.handleClick(x, y);
+      });
+
+    // ⭐ حرکت موس (برای hover)
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (!this.currentLevel) return;
+      if (typeof this.currentLevel.handleMouseMove !== 'function') return;
+  
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+  
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+  
+      this.currentLevel.handleMouseMove(x, y);
+      });
+
+      // ⭐ تغییر cursor به pointer روی کنواس
+      this.canvas.style.cursor = 'pointer';
+      }
+  
+      setInput(action, pressed) {
+      this.inputs[action] = pressed;
+      if (this.currentLevel) {
+        this.currentLevel.handleInput(action, pressed);
+      }
+      }
+  
+      /* ===== مدیریت پیشرفت ===== */
+      loadProgress() {
+      try {
+        const data = JSON.parse(localStorage.getItem('physicsGameProgress') || '{}');
+        this.totalScore = data.totalScore || 0;
+        this.completedLevels = new Set(data.completedLevels || []);
+      } catch(e) {}
+      document.getElementById('totalScore').textContent = this.totalScore;
+      }
+  
+      saveProgress() {
+      try {
+        localStorage.setItem('physicsGameProgress', JSON.stringify({
+          totalScore: this.totalScore,
+          completedLevels: [...this.completedLevels]
+        }));
+      } catch(e) {}
+      document.getElementById('totalScore').textContent = this.totalScore;
+      }
+  
+      /* ===== صفحه مراحل ===== */
+      renderLevelsScreen() {
+      const grid = document.getElementById('levelsGrid');
+      grid.innerHTML = '';
+      document.getElementById('totalLevels').textContent = this.levels.length;
+      
+      this.levels.forEach((level, idx) => {
+        const completed = this.completedLevels.has(level.id);
+        const unlocked = idx === 0 || this.completedLevels.has(this.levels[idx - 1].id);
+        
+        const card = document.createElement('div');
+        card.className = 'level-card';
+        if (completed) card.classList.add('completed');
+        if (!unlocked) card.classList.add('locked');
+        
+        let statusText = '🔓 باز';
+        if (completed) statusText = '✅ تکمیل';
+        if (!unlocked) statusText = '🔒 قفل';
+        
+        card.innerHTML = `
+          <div class="level-icon">${level.icon}</div>
+          <div class="level-name">مرحله ${idx + 1}: ${level.name}</div>
+          <div class="level-desc">${level.description}</div>
+          <div class="level-status">${statusText}</div>
+        `;
+        
+        if (unlocked) {
+          card.addEventListener('click', () => this.startLevel(idx));
+        }
+        grid.appendChild(card);
+      });
+    }
+  
+    showLevelsScreen() {
+      this.stop();
+      document.getElementById('levelsScreen').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.remove('active');
+      this.clearControls();
+      this.renderLevelsScreen();
+    }
+  
+    /* ===== شروع مرحله ===== */
+    startLevel(index) {
+      if (index < 0 || index >= this.levels.length) return;
+      
+      this.currentLevelIndex = index;
+      this.playingLevelIndex = index;
+      
+      const levelData = this.levels[index];
+      
+      document.getElementById('levelsScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.add('active');
+      
+      document.getElementById('gameTitle').textContent = `مرحله ${index + 1}: ${levelData.name}`;
+      document.getElementById('levelName').textContent = `مرحله ${index + 1}`;
+      document.getElementById('levelHint').textContent = levelData.hint || '';
+      document.getElementById('currentLevelNum').textContent = index + 1;
+      
+      this.clearControls();
+      
+      this.currentLevel = new levelData.Class(this);
+      this.currentLevel.init();
+      
+      this.buildLevelControls(levelData.Class);
+      
+      this.start();
+    }
+  
+    /* ⭐️ ساخت دکمه‌های خاص هر مرحله */
+    buildLevelControls(LevelClass) {
+      const controls = document.getElementById('gameControls');
+      controls.innerHTML = '';
+      
+      // ═══════ مرحله ۱: ترمز ═══════
+      if (LevelClass === Level1_Brake) {
+        const brakeBtn = document.createElement('button');
+        brakeBtn.className = 'ctrl-btn brake';
+        brakeBtn.textContent = '🛑 ترمز';
+        
+        const press = (e) => { e.preventDefault(); this.setInput('brake', true); };
+        const release = () => this.setInput('brake', false);
+        
+        brakeBtn.addEventListener('mousedown', press);
+        brakeBtn.addEventListener('mouseup', release);
+        brakeBtn.addEventListener('mouseleave', release);
+        brakeBtn.addEventListener('touchstart', press, { passive: false });
+        brakeBtn.addEventListener('touchend', release);
+        
+        controls.appendChild(brakeBtn);
+      }
+      
+      // ═══════ مرحله ۲: پرتابه ═══════
+      if (LevelClass === Level2_Projectile) {
+        const angleDown = this.makeArrowBtn('◀', 'angleDown');
+        angleDown.title = 'کاهش زاویه';
+        
+        const angleUp = this.makeArrowBtn('▶', 'angleUp');
+        angleUp.title = 'افزایش زاویه';
+        
+        const speedDown = this.makeArrowBtn('▼', 'speedDown');
+        speedDown.className = 'ctrl-arrow down';
+        speedDown.title = 'کاهش سرعت';
+        
+        const speedUp = this.makeArrowBtn('▲', 'speedUp');
+        speedUp.className = 'ctrl-arrow up';
+        speedUp.title = 'افزایش سرعت';
+        
+        const launchBtn = document.createElement('button');
+        launchBtn.className = 'ctrl-btn brake';
+        launchBtn.textContent = '🚀 شلیک';
+        launchBtn.style.background = 'linear-gradient(135deg, #f59e0b, #fbbf24)';
+        launchBtn.style.color = '#1e293b';
+        
+        launchBtn.addEventListener('click', () => {
+          this.setInput('launch', true);
+          setTimeout(() => this.setInput('launch', false), 100);
+        });
+        
+        controls.appendChild(angleDown);
+        controls.appendChild(angleUp);
+        controls.appendChild(speedDown);
+        controls.appendChild(speedUp);
+        controls.appendChild(launchBtn);
+      }
+      
+      // ═══════ مرحله ۳: تعادل اهرم ═══════
+      if (LevelClass === Level3_Balance) {
+        const prevBtn = this.makeArrowBtn('◀', 'selectPrev');
+        prevBtn.className = 'ctrl-arrow down';
+        prevBtn.title = 'وزنه قبلی';
+        
+        const nextBtn = this.makeArrowBtn('▶', 'selectNext');
+        nextBtn.title = 'وزنه بعدی';
+        
+        const moveLeftBtn = this.makeArrowBtn('⬅', 'moveLeft');
+        moveLeftBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        moveLeftBtn.title = 'حرکت به چپ';
+        
+        const moveRightBtn = this.makeArrowBtn('➡', 'moveRight');
+        moveRightBtn.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+        moveRightBtn.title = 'حرکت به راست';
+        
+        controls.appendChild(prevBtn);
+        controls.appendChild(nextBtn);
+        controls.appendChild(moveLeftBtn);
+        controls.appendChild(moveRightBtn);
+      }
+      
+      // ═══════ مرحله ۴: مدار الکتریکی ═══════
+      if (LevelClass === Level4_Circuit) {
+        const upBtn = document.createElement('button');
+        upBtn.className = 'ctrl-arrow up';
+        upBtn.textContent = '▲';
+        upBtn.title = 'افزایش مقاومت';
+        this.bindCtrl(upBtn, 'rUp');
+        
+        const downBtn = document.createElement('button');
+        downBtn.className = 'ctrl-arrow down';
+        downBtn.textContent = '▼';
+        downBtn.title = 'کاهش مقاومت';
+        this.bindCtrl(downBtn, 'rDown');
+        
+        controls.appendChild(upBtn);
+        controls.appendChild(downBtn);
+      }
+      // ═══════ مرحله ۵: زنگ‌زدگی ═══════
+    if (LevelClass === Level5_Corrosion) {
+      const hintBtn = document.createElement('button');
+      hintBtn.className = 'ctrl-btn brake';
+      hintBtn.textContent = '💡 راهنما';
+      hintBtn.style.background = 'linear-gradient(135deg, #a78bfa, #8b5cf6)';
+  
+      hintBtn.addEventListener('click', () => {
+        alert(
+          '🔬 راهنمای بازی زنگ‌زدگی:\n\n' +
+          '۱️⃣ فلزی که زنگ می‌زند: آهن (Fe) 🔩\n\n' +
+          '۲️⃣ معادله درست:\n4Fe + 3O₂ + 6H₂O → 4Fe(OH)₃\n\n' +
+          '۳️⃣ اسپری محافظ: اسپری روی (Zn) ⚙️\n\n' +
+          '💡 نکته: روی فعال‌تر از آهن است و به جای آن اکسید می‌شود.\n' +
+          'این روش «حفاظت کاتدی» نام دارد.'
+        );
+      });
+  
+      controls.appendChild(hintBtn);
+    }
+    }
+  
+    /* ===== پاک کردن دکمه‌ها ===== */
+    clearControls() {
+      const controls = document.getElementById('gameControls');
+      if (controls) controls.innerHTML = '';
+    }
+  
+    /* ===== ساخت دکمه پیکان ===== */
+    makeArrowBtn(text, action) {
+      const btn = document.createElement('button');
+      btn.className = 'ctrl-arrow';
+      btn.textContent = text;
+      this.bindCtrl(btn, action);
+      return btn;
+    }
+  
+    /* ===== بایند دکمه با تکرار پیوسته ===== */
+    bindCtrl(btn, action) {
+      let interval = null;
+      
+      const startPress = (e) => {
+        e.preventDefault();
+        this.setInput(action, true);
+        interval = setInterval(() => {
+          this.setInput(action, true);
+        }, 150);
+      };
+      
+      const stopPress = () => {
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+        this.setInput(action, false);
+      };
+      
+      btn.addEventListener('mousedown', startPress);
+      btn.addEventListener('mouseup', stopPress);
+      btn.addEventListener('mouseleave', stopPress);
+      btn.addEventListener('touchstart', startPress, { passive: false });
+      btn.addEventListener('touchend', stopPress);
+    }
+  
+    /* ===== شروع مجدد مرحله فعلی ===== */
+    restartLevel() {
+      if (this.playingLevelIndex >= 0 && this.playingLevelIndex < this.levels.length) {
+        this.startLevel(this.playingLevelIndex);
+      }
+    }
+  
+    /* ===== رفتن به مرحله بعد ===== */
+    nextLevel() {
+      const next = this.currentLevelIndex + 1;
+      if (next < this.levels.length) {
+        this.startLevel(next);
+      } else {
+        this.showLevelsScreen();
+      }
+    }
+  
+    /* ===== حلقه بازی ===== */
+    start() {
+      this.running = true;
+      this.lastTime = performance.now();
+      this.loop();
+    }
+  
+    stop() {
+      this.running = false;
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+  
+    loop() {
+      if (!this.running) return;
+      
+      const now = performance.now();
+      let dt = (now - this.lastTime) / 1000;
+      this.lastTime = now;
+      if (dt > 0.05) dt = 0.05;
+      
+      if (this.currentLevel) {
+        this.currentLevel.update(dt);
+        this.currentLevel.render();
+        
+        const result = this.currentLevel.checkResult();
+        if (result) {
+          this.handleResult(result);
+          return;
+        }
+      }
+      
+      this.animationId = requestAnimationFrame(() => this.loop());
+    }
+  
+    handleResult(result) {
+      this.stop();
+      setTimeout(() => this.showModal(result), 300);
+    }
+  
+    showModal(result) {
+      const modal = document.getElementById('modal');
+      const emoji = document.getElementById('modalEmoji');
+      const title = document.getElementById('modalTitle');
+      const msg = document.getElementById('modalMsg');
+      const nextBtn = document.getElementById('modalNextBtn');
+      
+      if (result.status === 'win') {
+        emoji.textContent = '🎉';
+        title.textContent = 'آفرین! مرحله تکمیل شد';
+        const score = result.score || 100;
+        this.totalScore += score;
+        this.completedLevels.add(this.levels[this.currentLevelIndex].id);
+        this.saveProgress();
+        
+        msg.innerHTML = this.buildResultMessage(result, score, true);
+        nextBtn.textContent = this.currentLevelIndex < this.levels.length - 1 ? '▶ مرحله بعد' : '🏁 پایان';
+      } else {
+        emoji.textContent = '💥';
+        title.textContent = 'متأسفانه!';
+        msg.innerHTML = this.buildResultMessage(result, 0, false);
+        nextBtn.textContent = '🔄 تلاش مجدد';
+      }
+      
+      modal.classList.add('active');
+    }
+  
+    buildResultMessage(result, score, isWin) {
+      let html = `
+        <div style="font-size:15px; color:#94a3b8; margin-bottom:20px; line-height:1.7;">
+          ${result.reason}
+          ${isWin ? `<br><br><span style="color:#fbbf24; font-weight:900; font-size:20px;">+${score} امتیاز</span>` : ''}
+        </div>
+      `;
+      
+      if (result.formula) {
+        const bgColor = isWin 
+          ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(167, 139, 250, 0.15))'
+          : 'linear-gradient(135deg, rgba(220, 38, 38, 0.15), rgba(245, 158, 11, 0.15))';
+        const borderColor = isWin ? 'rgba(56, 189, 248, 0.4)' : 'rgba(220, 38, 38, 0.4)';
+        const titleColor = isWin ? '#38bdf8' : '#f59e0b';
+        
+        html += `
+          <div style="
+            background: ${bgColor};
+            border: 2px solid ${borderColor};
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            text-align: right;
+            direction: rtl;
+          ">
+            <div style="font-size: 15px; font-weight: 900; color: ${titleColor}; margin-bottom: 12px; text-align: center;">
+              📐 ${result.formula.title}
+            </div>
+            <div style="
+              background: rgba(0, 0, 0, 0.3);
+              padding: 12px 15px;
+              border-radius: 10px;
+              font-family: 'Courier New', monospace;
+              font-size: 15px;
+              color: #fbbf24;
+              text-align: center;
+              margin-bottom: 10px;
+              font-weight: 700;
+              direction: ltr;
+            ">
+              ${result.formula.calc}
+            </div>
+            <div style="font-size: 13px; color: #cbd5e1; line-height: 1.7; text-align: center;">
+              ${result.formula.note}
+            </div>
+          </div>
+        `;
+      }
+      
+      return html;
+    }
+  
+  }  /* ⭐ پایان کلاس GameEngine */
+  
+  /* ===== اجرا ===== */
+  window.addEventListener('load', () => {
+    window.game = new GameEngine();
+  });
+  </script>
+
+</body>
+</html>
